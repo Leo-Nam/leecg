@@ -63,7 +63,7 @@ export default {
     const spinWheel = () => {
       if (spinning) return;
       spinning = true;
-      spinSpeed = Math.random() * 20 + 20;
+      spinSpeed = Math.random() * 20 + 20;		//최소 2초에서 최대 4초사이의 시간동안 회전판이 돌게함함
       animateSpin();
     };
 
