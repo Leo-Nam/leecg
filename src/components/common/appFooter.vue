@@ -1,5 +1,5 @@
 <template>
-	<div class="width-100 bg-cu fc-white df jcc pt-10 pb-10">
+	<div class="width-100 bg-cu fc-white df jcc pt-3 pb-3">
 		<div class="df jcsb">
 			<div>
 				<span class="mhcp" @click="clickPrivacyPolicy">

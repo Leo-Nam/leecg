@@ -1,6 +1,6 @@
 <template>
   <div class="width-100">
-    <div class="bg-373737 pb-100 pt-30">
+    <div class="bg-antiquewhite pb-100 pt-30">
       <div class="width-100 fs-30 df jcc">대학 가자, 얘들아!</div>
       <div class="width-100 fs-30 df jcc">현빈이도 같이 데려가자!</div>
     </div>
@@ -8,7 +8,7 @@
     <div 
       v-for="(pair, idx) in menuPairs"
       :key="idx"
-      class="main-body df bg-gold"
+      class="main-body df"
     >
       <!-- 첫 번째 메뉴 카드 -->
       <div class="width-50 p-20">

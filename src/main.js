@@ -12,6 +12,15 @@ import * as common from '@/modules/common';
 import './assets/styles/default.css';
 import './registerServiceWorker';
 
+// Vuetify
+import '@mdi/font/css/materialdesignicons.css'
+import 'vuetify/styles'
+
+import VCalendar from 'v-calendar';
+import 'v-calendar/style.css';
+
+// Use plugin with optional defaults
+
 // EventBus 생성
 import eventBus from '@/eventBus';
 
@@ -22,6 +31,7 @@ app.use(router);
 app.use(store);
 // app.use(BootstrapVueNext);
 // app.use(BModal);
+app.use(VCalendar, {})
 
 app.config.globalProperties.$showModal = function ({ title, message }) {
   this.$dialog.info({
