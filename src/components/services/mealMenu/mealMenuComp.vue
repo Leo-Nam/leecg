@@ -8,7 +8,7 @@
 import wheelSpinnerGameComp from './wheelSpinnerGameComp.vue';
 export default {
 	components: {
-		wheelSpinnerGameComp
+		wheelSpinnerGameComp,
 	},
 }
 </script>
