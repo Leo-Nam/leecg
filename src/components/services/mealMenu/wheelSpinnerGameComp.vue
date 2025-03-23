@@ -4,37 +4,54 @@
 		<div class="mt-2">
 			<canvas ref="wheelCanvas" width="500" height="500"></canvas>
 		</div>
-		<div>{{ picker }}</div>
-    <button @click="spinWheel">Spin</button>
+		<div><input type="checkbox" v-model="randomWeight" :disabled="spinSpeed > minSpinSpeed" @change="toggleRandomWeight">&nbsp;{{ checkBoxTitle }}</div>
+		<div>speed: {{ spinSpeed.toFixed(2) }}</div>
+    <div>{{ spinSpeed <= minSpinSpeed ? "당첨" : "당첨유력" }}: {{ picker }}</div>
+    <button @click="spinWheel">Spin(클릭하세요)</button>
   </div>
 </template>
 
 <script>
-import { ref, toRefs, onMounted, computed } from 'vue';
+import { ref, toRefs, onMounted, computed, watch } from 'vue';
 
 export default {
   props: {
     attendance: Boolean,
     segments: Object,
+    responsiveness: Number,
+    checkBoxTitle: String,
+    checkBoxChecked: Boolean
   },
-  setup(props) {
+  setup(props, context) {
+    // const emit = defineEmits(["toggleRandomWeight"]);
     const wheelCanvas = ref(null);
     // props를 반응형 변수로 변환
-    const { attendance, segments } = toRefs(props); // ✅ 별도 변수명 사용
+    const { attendance, segments, responsiveness, checkBoxChecked } = toRefs(props); // ✅ 별도 변수명 사용
 
 		// segments가 undefined일 경우 빈 배열로 초기화
 		const safeSegments = computed(() => segments.value ?? [])
-
+    const randomWeight = ref(false);
+    const minSpinSpeed = 0.01;
     let angle = 0;
     let spinning = false;
-    let spinSpeed = 0;
+    let spinSpeed = ref(0);
 		let picker = ref(attendance.value ? '' : ''); // ✅ picker를 ref로 선언하여 반응성 부여
+
+    watch(checkBoxChecked, (newVal) => {
+      console.log('checkBoxChecked 변경됨:', newVal);
+      randomWeight.value = newVal;
+    }, { deep: true });
+
+    watch(segments, () => {
+      console.log('segments 변경됨(자식):', attendance.value);
+      drawWheel();
+    }, { deep: true});
 
     const drawWheel = () => {
       const canvas = wheelCanvas.value;
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      const totalWeight = safeSegments.value.reduce((acc, seg) => acc + 1 / seg.score, 0);
+      const totalWeight = safeSegments.value.reduce((acc, seg) => acc + 1 / seg.weight, 0);
 			
       let startAngle = 0;
 
@@ -44,7 +61,7 @@ export default {
       ctx.rotate(angle * (Math.PI / 180)); // 회전 적용
 
       safeSegments.value.forEach((seg) => {
-        const sliceAngle = (Math.PI * 2 * (1 / seg.score)) / totalWeight;
+        const sliceAngle = (Math.PI * 2 * (1 / seg.weight)) / totalWeight;
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.arc(0, 0, 250, startAngle, startAngle + sliceAngle);
@@ -65,11 +82,11 @@ export default {
 				// 흰색 외곽선 (두껍게)
 				ctx.lineWidth = 1;
 				ctx.strokeStyle = 'white';
-				ctx.strokeText(attendance.value ? seg.name : seg.score, textX, textY);
+				ctx.strokeText(attendance.value ? seg.name : seg.name, textX, textY);
 
 				// 검정색 텍스트 (위에 덮어씌우기)
 				ctx.fillStyle = 'black';
-				ctx.fillText(attendance.value ? seg.name : seg.score, textX, textY);
+				ctx.fillText(attendance.value ? seg.name : seg.name, textX, textY);
 
         startAngle += sliceAngle;
       });
@@ -80,14 +97,14 @@ export default {
     const spinWheel = () => {
       if (spinning) return;
       spinning = true;
-      spinSpeed = Math.random() * 100 + 10;
+      spinSpeed.value = Math.random() * 100 / 0.001 * (1 - responsiveness.value) + 10;
       animateSpin();
     };
 
     const animateSpin = () => {
-      if (spinSpeed > 0.01) {
-        angle += spinSpeed;
-        spinSpeed *= 0.999;
+      if (spinSpeed.value > minSpinSpeed) {
+        angle += spinSpeed.value;
+        spinSpeed.value *= responsiveness.value;
         drawWheel();
         requestAnimationFrame(animateSpin);
         determineResult(false);
@@ -103,22 +120,22 @@ export default {
       const normalizedAngle = ((360 - (angle % 360) + 90 + 180) % 360) * (Math.PI / 180);
       let cumulativeAngle = 0;
 			for (const seg of safeSegments.value) {
-					const sliceAngle = (Math.PI * 2 * (1 / seg.score)) / safeSegments.value.reduce((acc, seg) => acc + 1 / seg.score, 0);
+					const sliceAngle = (Math.PI * 2 * (1 / seg.weight)) / safeSegments.value.reduce((acc, seg) => acc + 1 / seg.weight, 0);
 
 					if (normalizedAngle >= cumulativeAngle && normalizedAngle < cumulativeAngle + sliceAngle) {
 						if (final) {
-							alert(attendance.value ? `Sorry, ${seg.name}! It's your turn to pay! 😆` : `You won ${seg.score} points!`);
+							alert(attendance.value ? `Sorry, ${seg.name}! It's your turn to pay! 😆` : `You won ${seg.name} points!`);
 							// 🎆 90점 이상이면 폭죽 효과 실행!
-							if (seg.score >= 90) {
+							if (seg.weight >= 90) {
 								startFireworks();
 							}
 							break;
 						} else {
-							// console.log(attendance.value ? seg.name : seg.score);
+							// console.log(attendance.value ? seg.name : seg.name);
 							if (attendance.value) {
 								picker.value = seg.name;
 							} else {
-								picker.value = seg.score;
+								picker.value = seg.name;
 							}
 						}
 					}
@@ -176,10 +193,19 @@ export default {
 
     onMounted(drawWheel);
 
+    const toggleRandomWeight = () => {
+      console.log(randomWeight.value);
+      context.emit("toggleAttendanceRandomWeight", randomWeight.value);
+    };
+
     return {
       wheelCanvas,
       spinWheel,
-			picker
+			picker,
+      randomWeight,
+      toggleRandomWeight,
+      spinSpeed,
+      minSpinSpeed
     };
   }
 };
