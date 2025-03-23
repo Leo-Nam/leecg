@@ -4,51 +4,38 @@
 		<div class="mt-2">
 			<canvas ref="wheelCanvas" width="500" height="500"></canvas>
 		</div>
+		<div>{{ picker }}</div>
     <button @click="spinWheel">Spin</button>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, toRefs, onMounted, computed } from 'vue';
 
 export default {
-  setup() {
+  props: {
+    attendance: Boolean,
+    segments: Object,
+  },
+  setup(props) {
     const wheelCanvas = ref(null);
-		const getRandomColor = () => {
-			return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
-		};
+    // props를 반응형 변수로 변환
+    const { attendance, segments } = toRefs(props); // ✅ 별도 변수명 사용
 
-		// 배열을 랜덤하게 섞는 함수
-		const shuffleArray = (array) => {
-			return array
-				.map(value => ({ value, sort: Math.random() })) // 랜덤값 추가
-				.sort((a, b) => a.sort - b.sort) // 정렬
-				.map(({ value }) => value); // 원래 값만 추출
-		};
-    let segments = [
-      { score: 10, color: getRandomColor() },
-      { score: 20, color: getRandomColor() },
-      { score: 30, color: getRandomColor() },
-      { score: 40, color: getRandomColor() },
-      { score: 50, color: getRandomColor() },
-      { score: 60, color: getRandomColor() },
-      { score: 70, color: getRandomColor() },
-      { score: 80, color: getRandomColor() },
-      { score: 90, color: getRandomColor() },
-      { score: 100, color: getRandomColor() }
-    ];
-		// 점수 배치를 랜덤하게 섞음
-		segments = shuffleArray(segments);
+		// segments가 undefined일 경우 빈 배열로 초기화
+		const safeSegments = computed(() => segments.value ?? [])
 
     let angle = 0;
     let spinning = false;
     let spinSpeed = 0;
+		let picker = ref(attendance.value ? '' : ''); // ✅ picker를 ref로 선언하여 반응성 부여
 
     const drawWheel = () => {
       const canvas = wheelCanvas.value;
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      const totalWeight = segments.reduce((acc, seg) => acc + 1 / seg.score, 0);
+      const totalWeight = safeSegments.value.reduce((acc, seg) => acc + 1 / seg.score, 0);
+			
       let startAngle = 0;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -56,7 +43,7 @@ export default {
       ctx.translate(250, 250);
       ctx.rotate(angle * (Math.PI / 180)); // 회전 적용
 
-      segments.forEach((seg) => {
+      safeSegments.value.forEach((seg) => {
         const sliceAngle = (Math.PI * 2 * (1 / seg.score)) / totalWeight;
         ctx.beginPath();
         ctx.moveTo(0, 0);
@@ -78,12 +65,11 @@ export default {
 				// 흰색 외곽선 (두껍게)
 				ctx.lineWidth = 1;
 				ctx.strokeStyle = 'white';
-				ctx.strokeText(seg.score, textX, textY);
+				ctx.strokeText(attendance.value ? seg.name : seg.score, textX, textY);
 
 				// 검정색 텍스트 (위에 덮어씌우기)
 				ctx.fillStyle = 'black';
-				ctx.fillText(seg.score, textX, textY);
-
+				ctx.fillText(attendance.value ? seg.name : seg.score, textX, textY);
 
         startAngle += sliceAngle;
       });
@@ -104,32 +90,41 @@ export default {
         spinSpeed *= 0.999;
         drawWheel();
         requestAnimationFrame(animateSpin);
+        determineResult(false);
       } else {
         spinning = false;
-        determineResult();
+        determineResult(true);
       }
     };
 
 		const fireworks = ref([]);
 
-    const determineResult = () => {
+    const determineResult = (final) => {
       const normalizedAngle = ((360 - (angle % 360) + 90 + 180) % 360) * (Math.PI / 180);
       let cumulativeAngle = 0;
-			for (const seg of segments) {
-					const sliceAngle = (Math.PI * 2 * (1 / seg.score)) / segments.reduce((acc, seg) => acc + 1 / seg.score, 0);
+			for (const seg of safeSegments.value) {
+					const sliceAngle = (Math.PI * 2 * (1 / seg.score)) / safeSegments.value.reduce((acc, seg) => acc + 1 / seg.score, 0);
 
 					if (normalizedAngle >= cumulativeAngle && normalizedAngle < cumulativeAngle + sliceAngle) {
-							alert(`You won ${seg.score} points!`);
+						if (final) {
+							alert(attendance.value ? `Sorry, ${seg.name}! It's your turn to pay! 😆` : `You won ${seg.score} points!`);
 							// 🎆 90점 이상이면 폭죽 효과 실행!
 							if (seg.score >= 90) {
 								startFireworks();
 							}
 							break;
+						} else {
+							// console.log(attendance.value ? seg.name : seg.score);
+							if (attendance.value) {
+								picker.value = seg.name;
+							} else {
+								picker.value = seg.score;
+							}
+						}
 					}
-					cumulativeAngle += sliceAngle;
-			}
+          cumulativeAngle += sliceAngle;
+      }
     };
-
 		// 🎆 폭죽 효과 함수
 		const startFireworks = () => {
 			fireworks.value = [];
@@ -184,6 +179,7 @@ export default {
     return {
       wheelCanvas,
       spinWheel,
+			picker
     };
   }
 };

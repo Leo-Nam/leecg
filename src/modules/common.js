@@ -313,3 +313,15 @@ export const logout = async () => {
     alert('로그아웃 중 오류가 발생했습니다.');
   });
 }
+
+
+export const getRandomColor = () => {
+  return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+};
+
+export const shuffleArray = (array) => {
+  return array
+    .map(value => ({ value, sort: Math.random() })) // 랜덤값 추가
+    .sort((a, b) => a.sort - b.sort) // 정렬
+    .map(({ value }) => value); // 원래 값만 추출
+};
