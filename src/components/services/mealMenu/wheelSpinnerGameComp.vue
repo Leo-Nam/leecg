@@ -6,8 +6,9 @@
 		</div>
 		<div><input type="checkbox" v-model="randomWeight" :disabled="spinSpeed > minSpinSpeed" @change="toggleRandomWeight">&nbsp;{{ checkBoxTitle }}</div>
 		<div>speed: {{ spinSpeed.toFixed(2) }}</div>
+		<div>power: {{ (spinSpeedWeight * 100).toFixed(2) }}</div>
     <div>{{ spinSpeed <= minSpinSpeed ? "당첨" : "당첨유력" }}: {{ picker }}</div>
-    <button @click="spinWheel">Spin(클릭하세요)</button>
+    <button @mousedown="handleMouseDown" @mouseup="handleMouseUp">Spin(클릭하세요)</button>
   </div>
 </template>
 
@@ -20,10 +21,18 @@ export default {
     segments: Object,
     responsiveness: Number,
     checkBoxTitle: String,
-    checkBoxChecked: Boolean
+    checkBoxChecked: Boolean,
   },
   setup(props, context) {
     // const emit = defineEmits(["toggleRandomWeight"]);
+    const isPressing = ref(false);
+    const startTime = ref(0);
+    const endTime = ref(0);
+    const pressDuration = ref(0);
+    let spinSpeedWeight = ref(0);
+    const maxPressDuration = 2;
+    let interval = null; // setInterval을 저장할 변수
+
     const wheelCanvas = ref(null);
     // props를 반응형 변수로 변환
     const { attendance, segments, responsiveness, checkBoxChecked } = toRefs(props); // ✅ 별도 변수명 사용
@@ -46,6 +55,31 @@ export default {
       console.log('segments 변경됨(자식):', attendance.value);
       drawWheel();
     }, { deep: true});
+
+    const handleMouseDown = () => {
+      startTime.value = Date.now(); // 클릭 시작 시간 기록
+      isPressing.value = true;
+      console.log("버튼 눌림 (mousedown)");
+
+      // setInterval을 사용하여 지속 시간 실시간 업데이트
+      interval = setInterval(() => {
+        pressDuration.value = (Date.now() - startTime.value) / 1000; // 초 단위 변환
+        spinSpeedWeight.value = Math.min(maxPressDuration, pressDuration.value) / maxPressDuration;
+      }, 1); // 1ms마다 업데이트 (0.001초)
+    };
+
+    const handleMouseUp = () => {
+      if (interval) {
+        clearInterval(interval); // setInterval 중지
+        interval = null; // 변수 초기화
+      }
+      endTime.value = Date.now(); // 클릭 해제 시간 기록
+      isPressing.value = false;
+      pressDuration.value = (endTime.value - startTime.value) / 1000; // 초 단위 변환
+      console.log(`버튼 떼짐 (mouseup) - 지속 시간: ${pressDuration.value}초`);
+      // spinSpeedWeight.value = Math.min(maxPressDuration, pressDuration.value) / maxPressDuration;
+      spinWheel()
+    };
 
     const drawWheel = () => {
       const canvas = wheelCanvas.value;
@@ -97,7 +131,7 @@ export default {
     const spinWheel = () => {
       if (spinning) return;
       spinning = true;
-      spinSpeed.value = Math.random() * 100 / 0.001 * (1 - responsiveness.value) + 10;
+      spinSpeed.value = Math.random() * 100 / 0.001 * (1 - responsiveness.value) * spinSpeedWeight.value + 10;
       animateSpin();
     };
 
@@ -205,7 +239,10 @@ export default {
       randomWeight,
       toggleRandomWeight,
       spinSpeed,
-      minSpinSpeed
+      minSpinSpeed,
+      handleMouseDown,
+      handleMouseUp,
+      spinSpeedWeight
     };
   }
 };
