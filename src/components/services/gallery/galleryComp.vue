@@ -1,6 +1,6 @@
 <template>
-	<div>
-		<einsteinGravitySimulComp />
+	<div class="width-100 bg-black">
+		<einsteinGravitySimulComp class="width-100"/>
 	</div>
 </template>
 

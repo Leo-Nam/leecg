@@ -50,7 +50,7 @@ function initializeSpheres() {
   }
 
   for (let i = sphereNum; i < spheres.length; i++) {
-    const radius = Math.random() * 30 * mistGassMassWeight + 5;
+    const radius = Math.random() * 200 * mistGassMassWeight + 2;
     const mass = (4 / 3) * Math.PI * Math.pow(radius, 3); // 구의 부피 기반 질량
 
     spheres[i].x = Math.random() * (width - 2 * radius) + radius;
@@ -140,9 +140,9 @@ function draw() {
     //                   ${Math.floor(Math.random() * 256)}, 
     //                   ${Math.floor(Math.random() * 256)}, 
     //                   0.8)`;
-		ctx.fillStyle = "rgba(100, 150, 255, 0.8)";
+		ctx.fillStyle = "rgba(255, 215, 0, 0.8)";
     ctx.fill();
-    ctx.strokeStyle = "black";
+    ctx.strokeStyle = "gold";
     ctx.stroke();
   }
 }
