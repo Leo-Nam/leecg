@@ -4,16 +4,16 @@ import { onMounted, ref } from "vue";
 
 const canvasRef = ref(null);
 const ctxRef = ref(null);
-let gWeight = ref(0.00005); // 중력 가중치 (조절 가능) => 물체의 속도 조절 가능 / 숫자가 작을수록 느린 움직임을 보이지만 중력효과가 감소하는 단점이 있음. 이 변수는 중력효과의 증감에 적용하는것이 좋음 / 움직이는 속도를 조절하기 위해서는 speedScale의 수치를 조정하면 됨
+let gWeight = ref(0.00001); // 중력 가중치 (조절 가능) => 물체의 속도 조절 가능 / 숫자가 작을수록 느린 움직임을 보이지만 중력효과가 감소하는 단점이 있음. 이 변수는 중력효과의 증감에 적용하는것이 좋음 / 움직이는 속도를 조절하기 위해서는 speedScale의 수치를 조정하면 됨
 const starNum = 10; // 원하는 구 개수 설정 (Vue에서는 ref로 바인딩 가능)
-const mistGasNum = ref(500); // 원하는 미세먼지 개수 설정 (Vue에서는 ref로 바인딩 가능)
+const smallObjectNum = ref(1000); // 원하는 행성성 개수 설정 (Vue에서는 ref로 바인딩 가능)
 const mistGassMassWeight = 0.1; // 미세먼지 질량 가중치 (조절 가능)
 const speedOfLight = 30; // 빛의 속도 (픽셀/프레임 단위, 적절히 조정 필요)
 const G = 0.5;
 const starRadiusRange = [50, 250]; // 별 반지름 범위
-let logCount = 0
+// let logCount = 0
 const radiusEffectRatio = 0.1; // 반지름 효과 비율 (0~1 사이 값)
-const speedScale = 0.005; // 속도 스케일링 계수 (0~1 사이 값)
+const speedScale = 0.1; // 속도 스케일링 계수 (0~1 사이 값)
 
 
 // const G = 0.5; // 중력 상수 (조절 가능)
@@ -23,7 +23,7 @@ const speedScale = 0.005; // 속도 스케일링 계수 (0~1 사이 값)
 //   { x: 0, y: 0, radius: 0, mass: 0, vx: 0, vy: 0 },
 // ];
 
-let planets = Array.from({ length: starNum + mistGasNum.value }, () => ({
+let planets = Array.from({ length: starNum + smallObjectNum.value }, () => ({
   x: 0,
   y: 0,
   radius: 0.0,
@@ -32,7 +32,7 @@ let planets = Array.from({ length: starNum + mistGasNum.value }, () => ({
   vx: 0,
   vy: 0,
 }));
-console.log(planets.length, 'planets.length')
+// console.log(planets.length, 'planets.length')
 
 // 무작위 위치와 크기 설정
 function initializeSpheres() {
@@ -42,7 +42,7 @@ function initializeSpheres() {
   const height = canvas.height = window.innerHeight;
   
   // planets 배열 초기화 (필요한 경우)
-  planets = Array.from({ length: starNum + mistGasNum.value }, () => ({
+  planets = Array.from({ length: starNum + smallObjectNum.value }, () => ({
     x: 0,
     y: 0,
     radius: 0,
@@ -65,7 +65,7 @@ function initializeSpheres() {
       vx: Math.random() * 2 - 1,
       vy: Math.random() * 2 - 1
     };
-    console.log(planets[i].radius, radius, i, 'planet.radius');
+    // console.log(planets[i].radius, radius, i, 'planet.radius');
   }
 
   for (let i = starNum; i < planets.length; i++) {
@@ -81,7 +81,7 @@ function initializeSpheres() {
       vx: Math.random() * 2 - 1,
       vy: Math.random() * 2 - 1
     };
-    console.log(planets[i].radius, radius, i, 'planet.radius');
+    // console.log(planets[i].radius, radius, i, 'planet.radius');
   }
 }
 
@@ -187,13 +187,13 @@ function updatePositions() {
 //     ctx.stroke();
 //   }
 // }
-let drawingCount = 0
+// let drawingCount = 0
 function draw() {
   const ctx = ctxRef.value;
   const canvas = canvasRef.value;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  let i = 0
+  // let i = 0
   // console.log(planets.length, 'planets.length-999999999999999999')
   for (let planet of planets) {
     ctx.beginPath();
@@ -212,11 +212,11 @@ function draw() {
     // const r = 255;
     // const g = 255;
     // const b = 255;
-    if (drawingCount == 0) {
-      const planetRadius = planet.radius;
-      console.log({logCount, i, r, g, b, radiusRatio, planetRadius}, 'helloooooooooooooooooooooooooooooo')
-      logCount += 1
-    }
+    // if (drawingCount == 0) {
+    //   // const planetRadius = planet.radius;
+    //   // console.log({logCount, i, r, g, b, radiusRatio, planetRadius}, 'helloooooooooooooooooooooooooooooo')
+    //   logCount += 1
+    // }
     
     ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.6)`;
     ctx.strokeStyle = `rgba(${Math.floor(r*1.2)}, ${Math.floor(g*1.2)}, 0, 0.6)`;
@@ -239,7 +239,7 @@ function draw() {
       ctx.fill();
     }
   }
-  drawingCount += 1
+  // drawingCount += 1
 }
 
 // 애니메이션 루프
