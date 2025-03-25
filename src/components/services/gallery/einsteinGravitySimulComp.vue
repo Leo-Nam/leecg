@@ -4,16 +4,17 @@ import { onMounted, ref } from "vue";
 
 const canvasRef = ref(null);
 const ctxRef = ref(null);
-let gWeight = ref(0.00001); // 중력 가중치 (조절 가능) => 물체의 속도 조절 가능 / 숫자가 작을수록 느린 움직임을 보이지만 중력효과가 감소하는 단점이 있음. 이 변수는 중력효과의 증감에 적용하는것이 좋음 / 움직이는 속도를 조절하기 위해서는 speedScale의 수치를 조정하면 됨
-const starNum = 10; // 원하는 구 개수 설정 (Vue에서는 ref로 바인딩 가능)
+let gWeight = ref(1); // 중력 가중치 (조절 가능) => 물체의 속도 조절 가능 / 숫자가 작을수록 느린 움직임을 보이지만 중력효과가 감소하는 단점이 있음. 이 변수는 중력효과의 증감에 적용하는것이 좋음 / 움직이는 속도를 조절하기 위해서는 speedScale의 수치를 조정하면 됨
 const smallObjectNum = ref(1000); // 원하는 행성성 개수 설정 (Vue에서는 ref로 바인딩 가능)
+const starNum = smallObjectNum.value / 100; // 원하는 구 개수 설정 (Vue에서는 ref로 바인딩 가능)
 const mistGassMassWeight = 0.1; // 미세먼지 질량 가중치 (조절 가능)
 const speedOfLight = 30; // 빛의 속도 (픽셀/프레임 단위, 적절히 조정 필요)
-const G = 0.5;
+const G = 1;
 const starRadiusRange = [50, 250]; // 별 반지름 범위
 // let logCount = 0
 const radiusEffectRatio = 0.1; // 반지름 효과 비율 (0~1 사이 값)
-const speedScale = 0.1; // 속도 스케일링 계수 (0~1 사이 값)
+const speedScale = 0.0000001; // 속도 스케일링 계수 (0~1 사이 값)
+const baseInitSpeed = 0.5; // 기본 속도 계수
 
 
 // const G = 0.5; // 중력 상수 (조절 가능)
@@ -62,8 +63,8 @@ function initializeSpheres() {
       radius: radius,
       mass: mass,
       originalMass: mass,
-      vx: Math.random() * 2 - 1,
-      vy: Math.random() * 2 - 1
+      vx: (Math.random() * 2 - 1) * baseInitSpeed / radius,
+      vy: (Math.random() * 2 - 1) * baseInitSpeed / radius
     };
     // console.log(planets[i].radius, radius, i, 'planet.radius');
   }
