@@ -4,17 +4,19 @@ import { onMounted, ref } from "vue";
 
 const canvasRef = ref(null);
 const ctxRef = ref(null);
-let gWeight = ref(1); // 중력 가중치 (조절 가능) => 물체의 속도 조절 가능 / 숫자가 작을수록 느린 움직임을 보이지만 중력효과가 감소하는 단점이 있음. 이 변수는 중력효과의 증감에 적용하는것이 좋음 / 움직이는 속도를 조절하기 위해서는 speedScale의 수치를 조정하면 됨
+let gWeight = ref(20); // 중력 가중치 (조절 가능) => 물체의 속도 조절 가능 / 숫자가 작을수록 느린 움직임을 보이지만 중력효과가 감소하는 단점이 있음. 이 변수는 중력효과의 증감에 적용하는것이 좋음 / 움직이는 속도를 조절하기 위해서는 speedScale의 수치를 조정하면 됨
 const smallObjectNum = ref(1000); // 원하는 행성성 개수 설정 (Vue에서는 ref로 바인딩 가능)
 const starNum = smallObjectNum.value / 100; // 원하는 구 개수 설정 (Vue에서는 ref로 바인딩 가능)
-const mistGassMassWeight = 0.1; // 미세먼지 질량 가중치 (조절 가능)
 const speedOfLight = 30; // 빛의 속도 (픽셀/프레임 단위, 적절히 조정 필요)
 const G = 1;
-const starRadiusRange = [50, 250]; // 별 반지름 범위
+const starRadiusRange = [10, 100]; // 별 반지름 범위
+const smallObjectMassWeight = 0.00005 * (starRadiusRange[1] - starRadiusRange[0]); // 작은천체 질량 가중치 (조절 가능)
 // let logCount = 0
 const radiusEffectRatio = 0.1; // 반지름 효과 비율 (0~1 사이 값)
 const speedScale = 0.0000001; // 속도 스케일링 계수 (0~1 사이 값)
 const baseInitSpeed = 0.5; // 기본 속도 계수
+const objectTransparency = 1; // 물체 투명도 (0~1 사이 값)
+const saturationRatio = 1; // 채도 (0~1 사이 값) 숫자가 클수록 블랙홀의 경우 검은색에 가까워짐
 
 
 // const G = 0.5; // 중력 상수 (조절 가능)
@@ -70,7 +72,7 @@ function initializeSpheres() {
   }
 
   for (let i = starNum; i < planets.length; i++) {
-    const radius = Math.random() * 200 * mistGassMassWeight + 2;
+    const radius = Math.random() * 200 * smallObjectMassWeight + 2;
     const mass = (4 / 3) * Math.PI * Math.pow(radius, 3);
 
     planets[i] = {  // 직접 인덱스 접근
@@ -202,14 +204,14 @@ function draw() {
     
     // 반지름 비율 계산 (0~1 사이 값)
     // starRadiusRange[0] = 50, starRadiusRange[1] = 250 이라고 가정
-    const radiusRatio = Math.max(Math.min(planet.radius / radiusEffectRatio - starRadiusRange[0], 255), 0) / (starRadiusRange[1] - starRadiusRange[0]);
+    const radiusRatio = Math.max(Math.min(planet.radius / radiusEffectRatio - starRadiusRange[0], 255 * saturationRatio), 0) / (starRadiusRange[1] - starRadiusRange[0]);
     
     // 디버깅을 위해 콘솔 출력 (확인 후 제거 가능)
     
     // 반지름이 커질수록 검정색에 가까워지는 그라데이션
-    const r = Math.floor(Math.max(Math.min(255 * (1 - radiusRatio), 255), 0));
-    const g = Math.floor(Math.max(Math.min(255 * (1 - radiusRatio), 255), 0));
-    const b = Math.floor(Math.max(Math.min(255 * (1 - radiusRatio), 255), 0));
+    const r = Math.floor(Math.max(Math.min(255 * (1 - radiusRatio) * saturationRatio, 255 * saturationRatio), 0));
+    const g = Math.floor(Math.max(Math.min(255 * (1 - radiusRatio) * saturationRatio, 255 * saturationRatio), 0));
+    const b = 0;
     // const r = 255;
     // const g = 255;
     // const b = 255;
@@ -219,8 +221,8 @@ function draw() {
     //   logCount += 1
     // }
     
-    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.6)`;
-    ctx.strokeStyle = `rgba(${Math.floor(r*1.2)}, ${Math.floor(g*1.2)}, 0, 0.6)`;
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${objectTransparency})`;
+    ctx.strokeStyle = `rgba(${Math.floor(r*1.2)}, ${Math.floor(g*1.2)}, 0, ${objectTransparency})`;
     
     ctx.fill();
     ctx.stroke();
