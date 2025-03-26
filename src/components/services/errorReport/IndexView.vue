@@ -1,14 +1,15 @@
 <template>
 	<div>
-		<errorReportComp />
+		<fortRessComp />
 	</div>
 </template>
 
 <script>
-import errorReportComp from './errorReportComp.vue';
+import fortRessComp from './fortRessComp.vue';
+
 export default {
 	components: {
-		errorReportComp
+		fortRessComp
 	},
 }
 </script>
