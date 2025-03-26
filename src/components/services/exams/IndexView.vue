@@ -1,14 +1,15 @@
 <template>
 	<div>
-		<examsComp />
+		<mazeComp />
 	</div>
 </template>
 
 <script>
-import examsComp from './examsComp.vue';
+import mazeComp from './aStarTrackingMazeComp.vue';
+
 export default {
 	components: {
-		examsComp
+		mazeComp
 	},
 }
 </script>
