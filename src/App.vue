@@ -48,10 +48,12 @@ export default {
     };
   },
   mounted() {
+    window.addEventListener("resize", this.updateMainHeight);
     this.$store.dispatch('common/endLoading');  // 간혹 vuex의 isLoading값이 true인채로 남아 있을 경우에는 앱이 시작하자마자 로딩이 걸리게 되므로 앱이 시작하는 단계에서 endLoading을 실행함으로써 isLoading을 false로 만들어준다.
   },
   beforeUnmount() {
     // 이벤트 리스너 해제
+    window.removeEventListener("resize", this.updateMainHeight);
     eventBus.off('new-version-available');
   },
   computed: {
@@ -61,6 +63,18 @@ export default {
     },
   },
   methods: {
+    updateMainHeight() {
+      // 실제 메뉴와 푸터의 렌더링된 높이를 가져옴
+      const menuHeight = this.$refs.menu?.offsetHeight || 0;
+      const footerHeight = this.$refs.footer?.offsetHeight || 0;
+
+      // 차트 영역의 높이를 계산하여 적용
+      const newHeight = Math.max(window.innerHeight - menuHeight - footerHeight, 400);
+      console.log({newHeight})
+      this.$refs.main.style.height = `${newHeight}px`;
+      this.$store.commit('common/setMainHeight', newHeight)
+      console.log("common.mainHeight:", this.$store.state.common.mainHeight);
+    },
     applyNewVersion() {
       if (navigator.serviceWorker.controller) {
         // 새 버전을 활성화하도록 서비스워커에 메시지를 보내고 페이지를 새로고침합니다.
