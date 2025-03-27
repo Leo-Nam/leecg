@@ -5,12 +5,16 @@ import { useStore } from 'vuex'
 
 const canvasRef = ref(null);
 const ctxRef = ref(null);
+let bigBang = ref(true); // 초기 위치를 중앙으로 설정하여 빅뱅과 같은 효과를 만들지 여부
 let gWeight = ref(1); // 중력 가중치 (조절 가능) => 물체의 속도 조절 가능 / 숫자가 작을수록 느린 움직임을 보이지만 중력효과가 감소하는 단점이 있음. 이 변수는 중력효과의 증감에 적용하는것이 좋음 / 움직이는 속도를 조절하기 위해서는 speedScale의 수치를 조정하면 됨
-const smallObjectNum = ref(1000); // 원하는 행성성 개수 설정 (Vue에서는 ref로 바인딩 가능)
-const starNum = smallObjectNum.value / 10; // 원하는 구 개수 설정 (Vue에서는 ref로 바인딩 가능) 기본값: 1000
+const initSmallObjectNum = 1000; // 초기 작은 천체 개수
+const smallObjectNum = ref(initSmallObjectNum); // 원하는 행성성 개수 설정 (Vue에서는 ref로 바인딩 가능)
+const starNumRatio = bigBang.value ? 0 : 0.01; // 별의 비율 (0~1 사이 값) 기본값: 0.1
+const starNum = smallObjectNum.value * starNumRatio; // 원하는 구 개수 설정 (Vue에서는 ref로 바인딩 가능) 기본값: 1000
 let speedOfLight = ref(30); // 빛의 속도 (픽셀/프레임 단위, 적절히 조정 필요)
 let G = ref(1);  // 기본값: 1; 중력 상수 (조절 가능)
 const initG = 1
+let normalG = ref(10)
 const maxGravity = 1000; // 최대 중력 (조절 가능)
 const gravityDecreaseRate = 0.9999; // 중력 감소 비율 (0~1 사이 값)
 const starRadiusRange = [1, 5]; // 별 반지름 범위 기본값: [10, 30]
@@ -29,9 +33,8 @@ const blackHoleLightSpreadingEffect = 2.0; // 빛의 확산 효과 (1 이상의 
 const blackHoleLensEffect = 0.2; // 중력 렌즈 효과
 const objectInitialLocationWeight = 2; // 초기 위치 가중치 (0 이상 값)
 // let objectSpeedAccelation = ref(1); // 초기 가속도 가중치 (0 이상 값) 기본값: 1
-let bigBang = ref(true); // 초기 위치를 중앙으로 설정하여 빅뱅과 같은 효과를 만들지 여부
 let objectCollisionDetectionRange = ref(0); // 충돌 감지 범위 (0~1 사이 값, 이 값이 클수록 물체간 충돌이 빈번해짐)
-objectCollisionDetectionRange.value = bigBang.value ? 0.0001 / objectInitialLocationWeight : 0.01; // 충돌 감지 범위 기본값: 0.1
+objectCollisionDetectionRange.value = bigBang.value ? 1 / objectInitialLocationWeight : 0.01; // 충돌 감지 범위 기본값: 0.1
 // const explosionThreshold = 500; // 폭발 발생 질량 임계값
 // const explosionDebrisCount = 20; // 폭발 시 생성되는 조각 개수
 // 충돌 이펙트 배열
@@ -46,7 +49,7 @@ const mainHeight = computed(() => store.state.common.mainHeight)
 
 const startTime = ref(null)
 const animationFrameId = ref(null)
-const noGravityTime = ref(10000) // 중력이 0으로 설정되는 시간 (ms)
+const noGravityTime = ref(0) // 중력이 0으로 설정되는 시간 (ms)
 const isMaxGravityApplied = ref(false) // 최대 중력이 적용되는지 여부
 const lastGravityDecreaseTime = ref(null)
 
@@ -123,7 +126,7 @@ function initializePlanets() {
   for (let i = 0; i < smallObjectNum.value; i++) {
     const speed = Math.random() * baseInitMaxSpeed.value + baseInitMinSpeed.value;
     const density = Math.random() * maxDensity;
-    const radius = Math.max(Math.random() * 20 * smallObjectMassWeight, 1);
+    const radius = Math.max(Math.random() * 20 * smallObjectMassWeight, 2);
     const mass = (4 / 3) * Math.PI * Math.pow(radius, 3) * density;
 
     planets[i] = {  // 직접 인덱스 접근
@@ -137,8 +140,8 @@ function initializePlanets() {
       mass: (4 / 3) * Math.PI * Math.pow(radius, 3) * density, // 초기 질량,
       originalMass: mass,
 
-      vx: (Math.cos(angle) * speed) /20, // X축 속도
-      vy: (Math.sin(angle) * speed) /20,  // Y축 속도
+      vx: (Math.cos(angle) * speed) / fps.value, // X축 속도
+      vy: (Math.sin(angle) * speed) / fps.value,  // Y축 속도
       speed: speed, // 속도 
       // velocity: Math.sqrt(vx**2 + vy**2), // 속도
       // vx: (Math.random() * 2 - 1) * objectSpeedAccelation.value,
@@ -149,6 +152,7 @@ function initializePlanets() {
   }
 
   for (let i = smallObjectNum.value; i < planets.length; i++) {
+    // createSmallObject(angle, height, width, i)
     const speed = Math.random() * baseInitMaxSpeed.value + baseInitMinSpeed.value;
     const density = Math.random() * maxDensity;
     const radius = Math.max(Math.random() * (starRadiusRange[1] - starRadiusRange[0]) + starRadiusRange[0], 1);
@@ -165,8 +169,8 @@ function initializePlanets() {
       originalDensity: density,
       // vx: Math.cos(angle) * speed * objectSpeedAccelation.value, // X축 속도
       // vy: Math.sin(angle) * speed * objectSpeedAccelation.value  // Y축 속도
-      vx: ((Math.cos(angle) * speed) * baseInitMinSpeed.value / radius) /20,
-      vy: ((Math.sin(angle) * speed) * baseInitMinSpeed.value / radius) /20,
+      vx: ((Math.cos(angle) * speed) * baseInitMinSpeed.value / radius) / fps.value,
+      vy: ((Math.sin(angle) * speed) * baseInitMinSpeed.value / radius) / fps.value,
       speed: speed, // 속도 
       // velocity: Math.sqrt(vx**2 + vy**2), // 속도
       density: density,
@@ -174,6 +178,42 @@ function initializePlanets() {
     };
     // console.log(planets[i].radius, radius, i, 'planet.radius');
   }
+}
+
+function createSmallObject(i) {
+  const canvas = canvasRef.value;
+  const width = canvas.width = window.innerWidth;
+  const height = canvas.height = window.innerHeight;
+  const angle = Math.random() * Math.PI * 2; // 0~2π 랜덤 각도
+  // const angle = Math.random() * Math.PI * 2; // 0~2π 랜덤 각도
+
+  // const speed = Math.random() * baseInitMaxSpeed.value + baseInitMinSpeed.value;
+  const speed = 0;
+  const density = Math.random() * maxDensity;
+  const radius = Math.max(Math.random() * 20 * smallObjectMassWeight, 2);
+  // const radius = Math.max(Math.random() * 20, 1);
+  const mass = (4 / 3) * Math.PI * Math.pow(radius, 3) * density;
+
+  planets[i] = {  // 직접 인덱스 접근
+    x: Math.random() * width,
+    y: Math.random() * height,
+    // x: (width / 2) + Math.random() * radius * objectInitialLocationWeight,
+    // y: (height / 2) + Math.random() * radius * objectInitialLocationWeight,
+    radius: radius,
+    density: density,
+    originalDensity: density,
+    mass: (4 / 3) * Math.PI * Math.pow(radius, 3) * density, // 초기 질량,
+    originalMass: mass,
+
+    vx: ((Math.cos(angle) * speed) * baseInitMinSpeed.value / radius) / fps.value,
+    vy: ((Math.sin(angle) * speed) * baseInitMinSpeed.value / radius) / fps.value,
+    speed: 0.00001, // 속도 
+    // velocity: Math.sqrt(vx**2 + vy**2), // 속도
+    // vx: (Math.random() * 2 - 1) * objectSpeedAccelation.value,
+    // vy: (Math.random() * 2 - 1) * objectSpeedAccelation.value,
+    active: true
+  };
+  // console.log(planets[i].radius, radius, i, 'planet.radius');
 }
 
 // // 폭발 효과 함수
@@ -552,6 +592,13 @@ watch(bigBang, (newVal) => {
   animate();
 });
 
+watch(planets, (newVal) => {
+  // 빅뱅 상태 변경 시 실행할 코드
+  console.log('planets:', newVal);
+  // 상태 변경 시 애니메이션 재시작
+  applyGravity();
+});
+
 // 애니메이션 루프
 function animate(timestamp) {
   if (!startTime.value) {
@@ -562,23 +609,30 @@ function animate(timestamp) {
   const elapsedTime = timestamp - startTime.value
 
   // 첫 1초(noGravityTime) 동안은 중력을 0으로 설정
-  if (elapsedTime < noGravityTime.value && bigBang.value) {
-    G.value = 0
-    isMaxGravityApplied.value = false
+  if (bigBang.value) {
+    if (elapsedTime < noGravityTime.value && bigBang.value) {
+      G.value = 0
+      isMaxGravityApplied.value = false
+    } 
+    else {
+      // 1초가 지난 후 최대 중력 적용 (한 번만)
+      if (!isMaxGravityApplied.value) {
+        G.value = maxGravity * gWeight.value
+        isMaxGravityApplied.value = true
+        lastGravityDecreaseTime.value = timestamp // 최대 중력 적용 시간 기록
+      }
+      // 이후 1초마다 중력 0.1% 감소 (최소 initG까지)
+      else if (timestamp - lastGravityDecreaseTime.value >= 1000) {
+        G.value = Math.max(G.value * gWeight.value * gravityDecreaseRate, initG) // 0.1% 감소
+        lastGravityDecreaseTime.value = timestamp // 마지막 감소 시간 업데이트
+      }
+      if (activeCount.value < initSmallObjectNum) {
+        createSmallObject(planets.length)
+      }
+    }
+  } else {
+    G.value = normalG.value
   } 
-  else {
-    // 1초가 지난 후 최대 중력 적용 (한 번만)
-    if (!isMaxGravityApplied.value) {
-      G.value = maxGravity * gWeight.value
-      isMaxGravityApplied.value = true
-      lastGravityDecreaseTime.value = timestamp // 최대 중력 적용 시간 기록
-    }
-    // 이후 1초마다 중력 0.1% 감소 (최소 initG까지)
-    else if (timestamp - lastGravityDecreaseTime.value >= 1000) {
-      G.value = Math.max(G.value * gWeight.value * gravityDecreaseRate, initG) // 0.1% 감소
-      lastGravityDecreaseTime.value = timestamp // 마지막 감소 시간 업데이트
-    }
-  }
 
   handleCollisions();
   applyGravity();
