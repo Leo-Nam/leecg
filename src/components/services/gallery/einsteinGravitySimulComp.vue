@@ -52,6 +52,7 @@ const animationFrameId = ref(null)
 const noGravityTime = ref(0) // 중력이 0으로 설정되는 시간 (ms)
 const isMaxGravityApplied = ref(false) // 최대 중력이 적용되는지 여부
 const lastGravityDecreaseTime = ref(null)
+let showCollisionEffect = ref(false)
 
 const activeCount = computed(() => {
   return planets.filter(planet => planet.active).length;
@@ -255,7 +256,7 @@ function createSmallObject(i) {
 function calculateRelativisticMass(originalMass, velocity) {
   const v = Math.min(velocity, speedOfLight.value * 0.999999); // 빛의 속도 넘지 않도록
   const gamma = 1 / Math.sqrt(1 - (v * v) / (speedOfLight.value * speedOfLight.value));
-  if(v == velocity) console.log(velocity, 'velocity', gamma, 'gamma', speedOfLight.value * 0.999999, 'speedOfLight.value * 0.999999')
+  // if(v == velocity) console.log(velocity, 'velocity', gamma, 'gamma', speedOfLight.value * 0.999999, 'speedOfLight.value * 0.999999')
   return originalMass * gamma;
 }
 
@@ -271,6 +272,12 @@ function calculateNewRadius(a, b) {
   const newRadius = Math.pow((3 * newVolume) / (4 * Math.PI), 1/3);
 
   return newRadius;
+}
+
+function removeItemFast(removedIndex) {
+  const newPlanets = [...planets]; // 배열 복사
+  newPlanets.splice(removedIndex, 1); // 해당 인덱스 제거
+  planets = newPlanets; // 반응성 유지하며 교체
 }
 
 // 충돌 검사 및 흡수 처리 함수
@@ -291,22 +298,24 @@ function handleCollisions() {
       // if (distance < Math.min(a.radius, b.radius) * objectCollisionDetectionRange) {
       if (distance < Math.min(a.radius, b.radius) / Math.max(a.radius, b.radius) * objectCollisionDetectionRange.value) {
         console.log('collision detected!', i, j)
-        // console.log(planets)
-        // 충돌 지점 계산
-        const collisionX = (a.x + b.x) / 2;
-        const collisionY = (a.y + b.y) / 2;
-        
-        // 충돌 이펙트 추가
-        collisionEffects.value.push({
-          x: collisionX,  // 충돌 지점 x좌표
-          y: collisionY,  // 충돌 지점 y좌표
-          // radius: Math.max(a.radius, b.radius) * 0.5,
-          // radius: Math.sqrt(a.radius * b.radius),  // 충돌 초기 반지름
-          radius: calculateNewRadius(a, b),  // 충돌 초기 반지름
-          opacity: 1, // 초기 투명도 (1: 완전 불투명)
-          growthRate: 3,  // 프레임당 반지름 증가 속도
-          fadeRate: 0.015 // 프레임당 투명도 감소량
-        });
+        if (showCollisionEffect.value) {
+          // console.log(planets)
+          // 충돌 지점 계산
+          const collisionX = (a.x + b.x) / 2;
+          const collisionY = (a.y + b.y) / 2;
+          
+          // 충돌 이펙트 추가
+          collisionEffects.value.push({
+            x: collisionX,  // 충돌 지점 x좌표
+            y: collisionY,  // 충돌 지점 y좌표
+            // radius: Math.max(a.radius, b.radius) * 0.5,
+            // radius: Math.sqrt(a.radius * b.radius),  // 충돌 초기 반지름
+            radius: calculateNewRadius(a, b),  // 충돌 초기 반지름
+            opacity: 1, // 초기 투명도 (1: 완전 불투명)
+            growthRate: 3,  // 프레임당 반지름 증가 속도
+            fadeRate: 0.015 // 프레임당 투명도 감소량
+          });
+        }
         // 더 큰 물체가 작은 물체를 흡수
         if (a.mass > b.mass) {
           // 운동량 보존 (m1v1 + m2v2 = (m1+m2)v')
@@ -322,6 +331,7 @@ function handleCollisions() {
           
           // 작은 물체 비활성화
           b.active = false;
+          removeItemFast(j)
         } else {
           // 반대 경우
           b.vx = (a.mass * a.vx + b.mass * b.vx) / (a.mass + b.mass) * b.speed / fps.value;
@@ -334,6 +344,7 @@ function handleCollisions() {
           b.originalDensity = b.density;
           
           a.active = false;
+          removeItemFast(i)
         }
       }
     }
@@ -735,6 +746,9 @@ onUnmounted(() => {
           max="300"
           step="1"
         /> {{ speedOfLight }}
+      </div>
+      <div>
+        충돌효과: <input type="checkbox" v-model="showCollisionEffect" /> 
       </div>
     </div>
   </div>
