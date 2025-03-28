@@ -106,7 +106,7 @@ function initializePlanets() {
   const canvas = canvasRef.value;
   ctxRef.value = canvas.getContext("2d");
   const width = canvas.width = window.innerWidth;
-  const height = canvas.height = window.innerHeight;
+  const height = mainHeight.value;
   const angle = Math.random() * Math.PI * 2; // 0~2π 랜덤 각도
   
   // planets 배열 초기화 (필요한 경우)
