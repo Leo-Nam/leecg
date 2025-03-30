@@ -1,6 +1,7 @@
 <template>
 	<div
 		:style="{height: getMainHeight + 'px'}"
+		class="bg-gold"
 	>
 		<galleryComp />
 	</div>

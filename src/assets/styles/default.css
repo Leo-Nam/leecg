@@ -52,6 +52,19 @@ div {
   font-size: 14px;
 }
 
+/* 전체화면 모드에서의 배경 최적화 */
+:fullscreen .space-simulation {
+  background-color: #000 !important;
+}
+
+:-webkit-full-screen .space-simulation {
+  background-color: #000 !important;
+}
+
+:-moz-full-screen .space-simulation {
+  background-color: #000 !important;
+}
+
 .df {display: flex;}
 .fww {flex-wrap: wrap;}
 .db {display: block;}

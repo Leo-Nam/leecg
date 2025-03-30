@@ -1,7 +1,10 @@
 <template>
   <v-app>
     <div class="df jcc width-100">
-      <div class="width-100" style="max-width:1280px">
+      <div v-if="getCurrrentRouteName=='gallery'">
+        <einsteinGravitySimulComp />
+      </div>
+      <div v-else class="width-100" style="max-width:1280px">
         <div ref="menu" class="df aic">
           <div class="width-100">
             <!-- Application Bar -->
@@ -35,12 +38,14 @@
 import appBar from './components/common/appBar.vue';
 import appFooter from './components/common/appFooter.vue';
 import eventBus from '@/eventBus';
+import einsteinGravitySimulComp from '@/components/services/gallery/einsteinGravitySimulComp.vue'
 
 export default {
   name: 'App',
   components: {
     appBar,
     appFooter,
+    einsteinGravitySimulComp
   },
   data() {
     return {
@@ -61,9 +66,14 @@ export default {
       console.log('this.$store.state.common.isLoading', this.$store.state.common.isLoading);
       return this.$store.state.common.isLoading;
     },
+    getCurrrentRouteName() {
+      console.log(this.$store.state.route.currentRouteName, 'routeName')
+      return this.$store.state.route.currentRouteName
+    }
   },
   methods: {
     updateMainHeight() {
+      if (this.getCurrrentRouteName == 'gallery') return
       // 실제 메뉴와 푸터의 렌더링된 높이를 가져옴
       const menuHeight = this.$refs.menu?.offsetHeight || 0;
       const footerHeight = this.$refs.footer?.offsetHeight || 0;

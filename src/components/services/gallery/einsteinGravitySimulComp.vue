@@ -9,6 +9,8 @@ if (import.meta.hot) {
 import { onMounted, onUnmounted, ref, computed, watch } from "vue";
 import { useStore } from 'vuex'
 
+import FullscreenToggle from '@/components/common/FullscreenToggle.vue'
+
 const canvasRef = ref(null);
 const ctxRef = ref(null);
 let bigBang = ref(true); // 초기 위치를 중앙으로 설정하여 빅뱅과 같은 효과를 만들지 여부
@@ -88,6 +90,22 @@ const explodingStarRadiusDecreaseRate = ref(0.5)
 // FPS + 객체 수 함께 표시
 let lastTime = performance.now();
 let frameCount = 0;
+
+function initCanvas() {
+  const canvas = canvasRef.value;
+  if (!canvas) return null;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  // 디바이스 픽셀 비율 고려 (고해상도 대응)
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvas.offsetWidth * dpr;
+  canvas.height = canvas.offsetHeight * dpr;
+  ctx.scale(dpr, dpr);
+
+  return ctx;
+}
 
 function updateFPS() {
   const now = performance.now();
@@ -254,7 +272,7 @@ function createSmallObject(i, x, y, radius, mass, density, vx, vy) {
     active: true,
     exploding: false
   };
-  console.log('planet', i, 'created!')
+  // console.log('planet', i, 'created!')
   // console.log(planets[i].radius, radius, i, 'planet.radius');
 }
 
@@ -324,7 +342,7 @@ async function explodeStar(idx) {
     createSmallObject(planets.length, x, y, radius, mass, density, vx, vy)
   }
   planets[idx].exploding = false
-  console.log(idx, 'planet exploded')
+  // console.log(idx, 'planet exploded')
   explodeCount.value += 1;
 }
 
@@ -418,7 +436,7 @@ function handleCollisions() {
           // 작은 물체 비활성화
           removeItemFast(j)
           // checkExplosions(i); // 폭발 체크 추가
-          console.log('planet', j, 'removed!')
+          // console.log('planet', j, 'removed!')
         } else {
           // 반대 경우
           b.vx = (a.mass * a.vx + b.mass * b.vx) / (a.mass + b.mass) * b.speed / fps.value;
@@ -432,7 +450,7 @@ function handleCollisions() {
           
           removeItemFast(i)
           // checkExplosions(j); // 폭발 체크 추가
-          console.log('planet', i, 'removed!')
+          // console.log('planet', i, 'removed!')
         }
       }
     }
@@ -892,6 +910,9 @@ watch(bigBang, (newVal) => {
 
 // 애니메이션 루프
 function animate(timestamp) {
+  const ctx = initCanvas();
+  if (!ctx) return;
+
   if (!startTime.value) {
     startTime.value = timestamp
     lastGravityDecreaseTime.value = timestamp // 중력 감소 시작 시간 초기화
@@ -998,7 +1019,6 @@ onUnmounted(() => {
 <template>
   <div 
     class="container width-100"
-    :style="{ height: `${mainHeight.value}px` }"
   >
     <div
       class="canvas-container bg-green"
@@ -1087,5 +1107,8 @@ onUnmounted(() => {
         충돌효과: <input type="checkbox" v-model="showCollisionEffect" /> 
       </div>
     </div>
+
+  <!-- 전체화면 버튼 -->
+  <FullscreenToggle />
   </div>
 </template>
