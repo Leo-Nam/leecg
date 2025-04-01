@@ -4,6 +4,9 @@
       <div v-if="getCurrrentRouteName=='gallery'">
         <einsteinGravitySimulComp />
       </div>
+      <div v-if="getCurrrentRouteName=='solarSystem'">
+        <solarSystemComp />
+      </div>
       <div v-else class="width-100" style="max-width:1280px">
         <div ref="menu" class="df aic">
           <div class="width-100">
@@ -39,13 +42,15 @@ import appBar from './components/common/appBar.vue';
 import appFooter from './components/common/appFooter.vue';
 import eventBus from '@/eventBus';
 import einsteinGravitySimulComp from '@/components/services/gallery/einsteinGravitySimulComp.vue'
+import solarSystemComp from '@/components/services/jabDongsani/solarSystem/solarSystemComp.vue'
 
 export default {
   name: 'App',
   components: {
     appBar,
     appFooter,
-    einsteinGravitySimulComp
+    einsteinGravitySimulComp,
+    solarSystemComp
   },
   data() {
     return {

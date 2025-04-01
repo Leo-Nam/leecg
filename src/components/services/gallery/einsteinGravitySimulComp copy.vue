@@ -82,9 +82,7 @@ const isAlive = ref(true); // 컴포넌트 생존 상태
 const particleCreatingDistance = ref(15)
 const restingMassRate = ref(0.5)  // 천체 폭발 후 남는 질량으로서 이 질량이 블랙홀로 변한다
 const explodingStarRadiusDecreaseRate = ref(0.5)
-const forceSum = ref(0)
-const pxConversion = ref(1) // 1px을 1미터로 환산함
-pxConversion.value = 1000  // 1px을 1km로 환산함
+
 // const activeCount = computed(() => {
 //   return planets.filter(planet => planet.active).length;
 // });
@@ -119,6 +117,13 @@ function updateFPS() {
   }
 }
 
+// const G = 0.5; // 중력 상수 (조절 가능)
+// const planets = [
+//   { x: 0, y: 0, radius: 0, mass: 0, vx: 0, vy: 0 },
+//   { x: 0, y: 0, radius: 0, mass: 0, vx: 0, vy: 0 },
+//   { x: 0, y: 0, radius: 0, mass: 0, vx: 0, vy: 0 },
+// ];
+
 let planets = Array.from({ length: starNum + smallObjectNum.value }, () => ({
   x: 0,
   y: 0,
@@ -131,6 +136,16 @@ let planets = Array.from({ length: starNum + smallObjectNum.value }, () => ({
   density: 1,
   exploding: false
 }));
+// console.log(planets.length, 'planets.length')
+
+// // 밀도(density)와 질량(mass)으로부터 반지름 계산
+// function calculateRadiusFromMassAndDensity(mass, density) {
+//     // V = m/ρ (부피 = 질량/밀도)
+//     // 구의 부피 V = (4/3)πr³ 이므로
+//     // r³ = (3m)/(4πρ)
+//     const radiusCubed = (3 * mass) / (4 * Math.PI * density);
+//     return Math.pow(radiusCubed, 1/3);
+// }
 
 // 무작위 위치와 크기 설정
 function initializePlanets() {
@@ -160,7 +175,7 @@ function initializePlanets() {
     const speed = Math.random() * baseInitMaxSpeed.value + baseInitMinSpeed.value;
     const density = Math.random() * maxDensity;
     const radius = Math.max(Math.random() * 20 * smallObjectMassWeight, objectMinRadius.value);
-    const mass = (4 / 3) * Math.PI * Math.pow(radius, 3) * density * pxConversion.value ** 2;
+    const mass = (4 / 3) * Math.PI * Math.pow(radius, 3) * density;
 
     if (!mass) return
     planets[i] = {  // 직접 인덱스 접근
@@ -177,6 +192,9 @@ function initializePlanets() {
       vx: (Math.cos(angle) * speed) / fps.value, // X축 속도
       vy: (Math.sin(angle) * speed) / fps.value,  // Y축 속도
       speed: speed, // 속도 
+      // velocity: Math.sqrt(vx**2 + vy**2), // 속도
+      // vx: (Math.random() * 2 - 1) * objectSpeedAccelation.value,
+      // vy: (Math.random() * 2 - 1) * objectSpeedAccelation.value,
       active: true,
       exploding: false
     };
@@ -188,19 +206,24 @@ function initializePlanets() {
     const speed = Math.random() * baseInitMaxSpeed.value + baseInitMinSpeed.value;
     const density = Math.random() * maxDensity;
     const radius = Math.max(Math.random() * (starRadiusRange[1] - starRadiusRange[0]) + starRadiusRange[0], objectMinRadius.value);
-    const mass = (4 / 3) * Math.PI * Math.pow(radius, 3) * density * pxConversion.value ** 2;
+    const mass = (4 / 3) * Math.PI * Math.pow(radius, 3) * density;
 
     if (!mass) return
     planets[i] = {  // 직접 인덱스 접근
       x: !bigBang.value ? Math.random() * (width - 2 * radius) + radius : (width / 2) + Math.random() * objectInitialLocationWeight,
       y: !bigBang.value ? Math.random() * (height - 2 * radius) + radius : (height / 2) + Math.random() * objectInitialLocationWeight,
+      // x: (width / 2) + Math.random() * objectInitialLocationWeight,
+      // y: (height / 2) + Math.random() * objectInitialLocationWeight,
       radius: radius,
       mass: mass,
       originalMass: mass,
       originalDensity: density,
+      // vx: Math.cos(angle) * speed * objectSpeedAccelation.value, // X축 속도
+      // vy: Math.sin(angle) * speed * objectSpeedAccelation.value  // Y축 속도
       vx: ((Math.cos(angle) * speed) * baseInitMinSpeed.value / radius) / fps.value,
       vy: ((Math.sin(angle) * speed) * baseInitMinSpeed.value / radius) / fps.value,
       speed: speed, // 속도 
+      // velocity: Math.sqrt(vx**2 + vy**2), // 속도
       density: density,
       active: true,
       exploding: false
@@ -209,11 +232,30 @@ function initializePlanets() {
   }
 }
 
+// function createBlackHole(idx) {
+//   planets[idx].mass = planets[idx].mass * ( 1 / )
+// }
+
 function createSmallObject(i, x, y, radius, mass, density, vx, vy) {
+  // const canvas = canvasRef.value;
+  // const width = canvas.width = window.innerWidth;
+  // const height = canvas.height = window.innerHeight;
+  // const angle = Math.random() * Math.PI * 2; // 0~2π 랜덤 각도
+  // const angle = Math.random() * Math.PI * 2; // 0~2π 랜덤 각도
+
+  // const speed = Math.random() * baseInitMaxSpeed.value + baseInitMinSpeed.value;
+  // const speed = 0;
+  // const density = Math.random() * maxDensity;
+  // const radius = Math.max(Math.random() * 20 * smallObjectMassWeight, 2);
+  // const radius = Math.max(Math.random() * 20, 1);
+  // const mass = (4 / 3) * Math.PI * Math.pow(radius, 3) * density;
+
   if (!mass) return
   planets[i] = {  // 직접 인덱스 접근
     x: x,
     y: y,
+    // x: (width / 2) + Math.random() * radius * objectInitialLocationWeight,
+    // y: (height / 2) + Math.random() * radius * objectInitialLocationWeight,
     radius: radius,
     density: density,
     originalDensity: density,
@@ -221,15 +263,34 @@ function createSmallObject(i, x, y, radius, mass, density, vx, vy) {
     originalMass: mass,
     vx: vy,
     vy: vy,
+    // vx: ((Math.cos(angle) * speed) * baseInitMinSpeed.value / radius) / fps.value,
+    // vy: ((Math.sin(angle) * speed) * baseInitMinSpeed.value / radius) / fps.value,
     speed: 0.00001, // 속도 
+    // velocity: Math.sqrt(vx**2 + vy**2), // 속도
+    // vx: (Math.random() * 2 - 1) * objectSpeedAccelation.value,
+    // vy: (Math.random() * 2 - 1) * objectSpeedAccelation.value,
     active: true,
     exploding: false
   };
+  // console.log('planet', i, 'created!')
+  // console.log(planets[i].radius, radius, i, 'planet.radius');
 }
 
+
+// function getRandomOrbitPoint(x, y, r) {
+//   // 0~2π 사이의 랜덤 각도 (라디안)
+//   const angle = Math.random() * Math.PI * 2;
+  
+//   // 원의 방정식: x = r*cosθ, y = r*sinθ
+//   return {
+//     x: x + r * Math.cos(angle),
+//     y: y + r * Math.sin(angle)
+//   };
+// }
+
 function createBlackHole(idx) {
-  planets[idx].radius = planets[idx].radius * explodingStarRadiusDecreaseRate.value
   planets[idx].mass = planets[idx].mass * (1 - restingMassRate.value)
+  planets[idx].radius = planets[idx].radius * explodingStarRadiusDecreaseRate.value
   planets[idx].density = planets[idx].density * (1 / ((1 - restingMassRate.value) ** 3)) * (explodingStarRadiusDecreaseRate.value ** 3)
   planets[idx].exploding = false
 }
@@ -239,6 +300,35 @@ async function explodeStar(idx) {
   if (!planets[idx]) return
   planets[idx].exploding = true
   for (let i = 0; i < explosionDebrisCount; i++) {
+    // const x = planets[idx].x;
+    // const y = planets[idx].y;
+    // const density = planets[idx].density;
+    // const mass = planets[idx].mass / explosionDebrisCount;
+    // // const originalRadius = Math.sqrt(planets[idx].radius**2 / explosionDebrisCount);
+    // const originalRadius = calculateNewRadius(mass, 0, density, 0);    
+    // const radius = Math.max(originalRadius, objectMinRadius.value);
+    // const newPosition = getRandomOrbitPoint(x, y, planets[idx].radius * particleCreatingDistance.value);
+
+    // // 1. 중심 → 조각 방향 벡터 (정규화)
+    // const dx = newPosition.x - x
+    // const dy = newPosition.y - y
+    // const distance = Math.sqrt(dx * dx + dy * dy);
+    // const nx = dx / distance; // 단위 벡터 X
+    // const ny = dy / distance; // 단위 벡터 Y
+    
+    // // 2. 접선 방향 벡터 (수직)
+    // const tx = -ny; // X 접선 성분
+    // const ty = nx;  // Y 접선 성분    
+
+    // // 3. 속도 조합 (방사형 70% + 접선 30%)
+    // const radialSpeed = Math.random() * baseInitMaxSpeed.value; // 바깥 방향 속도
+    // const tangentialSpeed = (Math.random() - 0.5) * baseInitMaxSpeed.value * 0.3; // 회전 속도 
+
+    // // const angle = Math.atan2(dy, dx)  // Calculate angle from dx and dy
+    // const vx = (nx * radialSpeed + tx * tangentialSpeed) / fps.value;
+    // const vy = (ny * radialSpeed + ty * tangentialSpeed) / fps.value;
+    
+    // if (!mass) return
     const canvas = canvasRef.value;
     const width = canvas.width = window.innerWidth;
     const height = canvas.height = window.innerHeight;
@@ -260,7 +350,8 @@ async function explodeStar(idx) {
 async function checkExplosions(idx) {
   if (!planets[idx]) return
   if (planets[idx].exploding) return
-  if (planets[idx].mass > explosionThreshold.value * massUnit * pxConversion.value ** 2) {
+  if (planets[idx].mass > explosionThreshold.value * massUnit) {
+    // planets[idx].active = false; // 원래 별 비활성화
     await explodeStar(idx);
     // removeItemFast(idx);
     createBlackHole(idx)
@@ -285,8 +376,7 @@ function calculateNewRadius(mass1, mass2, density1, density2) {
 
   // 3. 새 부피 → 반지름 계산
   const newVolume = newMass / newDensity;
-  // const newRadius = Math.pow((3 * newVolume) / (4 * Math.PI), 1/3) * pxConversion.value ** 3;
-  const newRadius = Math.pow((3 * newVolume) / (4 * Math.PI), 1/3) / (pxConversion.value ** 2);
+  const newRadius = Math.pow((3 * newVolume) / (4 * Math.PI), 1/3);
 
   return newRadius;
 }
@@ -322,6 +412,8 @@ function handleCollisions() {
           collisionEffects.value.push({
             x: collisionX,  // 충돌 지점 x좌표
             y: collisionY,  // 충돌 지점 y좌표
+            // radius: Math.max(a.radius, b.radius) * 0.5,
+            // radius: Math.sqrt(a.radius * b.radius),  // 충돌 초기 반지름
             radius: calculateNewRadius(a.mass, b.mass, a.density, b.density),  // 충돌 초기 반지름
             opacity: 1, // 초기 투명도 (1: 완전 불투명)
             growthRate: 3,  // 프레임당 반지름 증가 속도
@@ -365,6 +457,137 @@ function handleCollisions() {
   }
 }
 
+// // 중력 계산
+// function applyGravity() {
+//   for (let i = 0; i < planets.length; i++) {
+//     // 속도에 따른 상대론적 질량 업데이트
+//     const velocity = Math.sqrt(planets[i].vx * planets[i].vx + planets[i].vy * planets[i].vy);
+//     planets[i].mass = calculateRelativisticMass(planets[i].originalMass, velocity).mass;
+    
+//     // 반지름도 질량에 비례하여 조정 (시각적 효과)
+//     // if (i<10){
+//     //   // console.log(i, planets[i].mass, planets[i].density)
+//     // }
+//     planets[i].radius = Math.cbrt((planets[i].mass / planets[i].density) / ((4/3) * Math.PI)) * radiusEffectRatio; // radiusEffectRatio는 스케일 조정
+//     for (let j = i + 1; j < planets.length; j++) {
+//       const a = planets[i];
+//       const b = planets[j];
+//       const dx = b.x - a.x;
+//       const dy = b.y - a.y;
+//       const distance = Math.sqrt(dx * dx + dy * dy);
+
+//       if (distance > a.radius + b.radius) {
+//         // 중력 공식 적용 (F = G * (m1 * m2) / r^2)
+//         const force = (G.value * gWeight.value * a.mass * b.mass) / (distance * distance);
+//         const angle = Math.atan2(dy, dx);
+
+//         // 가속도 계산
+//         const ax = (force / a.mass) * Math.cos(angle) * a.speed / fps.value;
+//         const ay = (force / a.mass) * Math.sin(angle) * a.speed / fps.value;
+//         const bx = (force / b.mass) * Math.cos(angle) * -1 * b.speed / fps.value;
+//         const by = (force / b.mass) * Math.sin(angle) * -1 * b.speed / fps.value;
+
+//         // 속도 업데이트
+//         a.vx += ax * a.speed / fps.value;
+//         a.vy += ay * a.speed / fps.value;
+//         b.vx += bx * b.speed / fps.value;
+//         b.vy += by * b.speed / fps.value;
+//       }
+//     }
+//   }
+// }
+
+// function calculateGravityForce(idx) {
+//   let totalForceX = 0;
+//   let totalForceY = 0;  
+    
+//   const dx = other.x - planets[].x;
+//   const dy = other.y - planets[].y;
+//   const distance = Math.sqrt(dx ** 2 + dy ** 2);
+//   const directionX = dx / distance;
+//   const directionY = dy / distance;
+  
+//   // 만유인력 법칙 (F = GMm/r²)
+//   const force = G * planets[].restMass * other.restMass / (distance ** 2);
+//   totalForceX += force * directionX;
+//   totalForceY += force * directionY;
+  
+//   return { x: totalForceX, y: totalForceY };
+// }
+
+// function updatePhysics(idx) {
+//   // 1. 현재 속도 및 운동량 계산
+//   const velocity = Math.sqrt(planets[idx].vx ** 2 + planets[idx].vy ** 2);
+//   const gamma = 1 / Math.sqrt(1 - (velocity ** 2) / (speedOfLight.value ** 2));
+//   const momentumX = gamma * planets[idx].originalMass * planets[idx].vx;
+//   const momentumY = gamma * planets[idx].originalMass * planets[idx].vy;
+
+//   // // 2. 외력(추력) 계산 (예: 중력 또는 사용자 정의 힘)
+//   // const forceX = calculateGravityForce(planets[idx]).x; // 중력 x성분
+//   // const forceY = calculateGravityForce(planets[idx]).y; // 중력 y성분
+
+//   // 3. 운동량 업데이트 (F = Δp/Δt)
+//   const newMomentumX = momentumX + planets[idx].vx * timeStep;
+//   const newMomentumY = momentumY + planets[idx].vy * timeStep;
+
+//   // 4. 새로운 속도 역계산 (p = γm₀v)
+//   const newMomentum = Math.sqrt(newMomentumX ** 2 + newMomentumY ** 2);
+//   const newGamma = Math.sqrt(1 + (newMomentum / (planets[idx].originalMass * speedOfLight.value)) ** 2);
+//   const newSpeed = (newMomentum / planets[idx].originalMass) / newGamma;
+
+//   // 5. 방향 유지하며 속도 업데이트
+//   if (newMomentum > 0) {
+//     planets[idx].vx = (newMomentumX / newMomentum) * newSpeed;
+//     planets[idx].vy = (newMomentumY / newMomentum) * newSpeed;
+//   }
+
+//   // 6. 위치 업데이트
+//   planets[idx].x += planets[idx].vx * timeStep;
+//   planets[idx].y += planets[idx].vy * timeStep;
+// }
+
+// // 중력 계산
+// function applyGravity() {
+//   for (let i = 0; i < planets.length; i++) {
+//     // 속도에 따른 상대론적 질량 업데이트
+//     const velocity = Math.sqrt(planets[i].vx * planets[i].vx + planets[i].vy * planets[i].vy);
+//     planets[i].mass = calculateRelativisticMass(planets[i].originalMass, velocity).mass;
+    
+//     // 반지름도 질량에 비례하여 조정 (시각적 효과)
+//     // if (i<10){
+//     //   // console.log(i, planets[i].mass, planets[i].density)
+//     // }
+//     planets[i].radius = Math.cbrt((planets[i].mass / planets[i].density) / ((4/3) * Math.PI)) * radiusEffectRatio; // radiusEffectRatio는 스케일 조정
+//     for (let j = i + 1; j < planets.length; j++) {
+//       // const a = planets[i];
+//       // const b = planets[j];
+//       const dx = planets[j].x - planets[i].x;
+//       const dy = planets[j].y - planets[i].y;
+//       const distance = Math.sqrt(dx * dx + dy * dy);
+
+//       if (distance > planets[i].radius + planets[j].radius) {
+//         // 중력 공식 적용 (F = G * (m1 * m2) / r^2)
+//         const force = (G.value * gWeight.value * planets[i].mass * planets[j].mass) / (distance * distance);
+//         const angle = Math.atan2(dy, dx);
+
+//         // 가속도 계산
+//         const ax = (force / planets[i].mass) * Math.cos(angle) * planets[i].speed / fps.value;
+//         const ay = (force / planets[i].mass) * Math.sin(angle) * planets[i].speed / fps.value;
+//         const bx = (force / planets[j].mass) * Math.cos(angle) * -1 * planets[j].speed / fps.value;
+//         const by = (force / planets[j].mass) * Math.sin(angle) * -1 * planets[j].speed / fps.value;
+
+//         // 속도 업데이트
+//         planets[i].vx += ax * planets[i].speed / fps.value;
+//         planets[i].vy += ay * planets[i].speed / fps.value;
+//         planets[j].vx += bx * planets[j].speed / fps.value;
+//         planets[j].vy += by * planets[j].speed / fps.value;
+//       }
+//       // updatePhysics(j)
+//     }
+//   }
+// }
+
+
 // 중력 계산
 function applyGravity() {
   // const c = speedOfLight.value * 0.999999; // 광속 임계값
@@ -380,23 +603,30 @@ function applyGravity() {
     const crm = calculateRelativisticMass(planets[i].originalMass, velocity);
     planets[i].mass = crm.mass;
     checkExplosions(i) 
+    // planets[i].vx = crm.vx;
+    // planets[i].vy = crm.vy;
     
+    // 반지름도 질량에 비례하여 조정 (시각적 효과)
+    // if (i<10){
+    //   // console.log(i, planets[i].mass, planets[i].density)
+    // }
     if (planets[i].mass > maxMass) {
       maxMass = planets[i].mass;
       planetIdx = i
     }
     if (planets[i].density > maxDen) maxDen = planets[i].density;
-    planets[i].radius = Math.cbrt((planets[i].mass / planets[i].density) / ((4/3) * Math.PI)) * radiusEffectRatio / pxConversion.value; // radiusEffectRatio는 스케일 조정
+    planets[i].radius = Math.cbrt((planets[i].mass / planets[i].density) / ((4/3) * Math.PI)) * radiusEffectRatio; // radiusEffectRatio는 스케일 조정
     for (let j = i + 1; j < planets.length; j++) {
+      // const a = planets[i];
+      // const b = planets[j];
       if (!planets[j]) return
-      const dx = (planets[j].x - planets[i].x) * pxConversion.value;
-      const dy = (planets[j].y - planets[i].y) * pxConversion.value;
+      const dx = planets[j].x - planets[i].x;
+      const dy = planets[j].y - planets[i].y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
       if (distance > planets[i].radius + planets[j].radius) {
         // 중력 공식 적용 (F = G * (m1 * m2) / r^2)
         const force = (G.value * gWeight.value * planets[i].mass * planets[j].mass) / (distance * distance);
-        forceSum.value += force  // 전체 중력의 합을 실시간 합산
         const angle = Math.atan2(dy, dx);
 
         // 가속도 계산
@@ -411,13 +641,46 @@ function applyGravity() {
         planets[j].vx += bx * planets[j].speed / fps.value;
         planets[j].vy += by * planets[j].speed / fps.value;
       }
+      // updatePhysics(j)
     }
+
+    // // 6. 위치 업데이트
+    // planets[i].x += planets[i].vx / fps_val;
+    // planets[i].y += planets[i].vy / fps_val;
+
+    // // 7. 광속 제한 (운동량 보존)
+    // const momentum = planets[i].mass * velocity;
+    // const maxMomentum = planets[i].originalMass * c;
+    // if (momentum > maxMomentum) {
+    //   const ratio = maxMomentum / momentum;
+    //   planets[i].vx *= ratio;
+    //   planets[i].vy *= ratio;
+    // }
   }
   biggestMass.value = (maxMass / massUnit).toFixed(2);
   biggestPlanetIdx.value = planetIdx
   biggestDensity.value = maxDen;
 }
 
+// 위치 업데이트
+// function updatePositions() {
+//   const canvas = canvasRef.value;
+//   const width = canvas.width;
+//   const height = canvas.height;
+
+//   for (let planet of planets) {
+//     planet.x += planet.vx;
+//     planet.y += planet.vy;
+
+//     // 벽 충돌 처리
+//     if (planet.x - planet.radius < 0 || planet.x + planet.radius > width) {
+//       planet.vx *= -1;
+//     }
+//     if (planet.y - planet.radius < 0 || planet.y + planet.radius > height) {
+//       planet.vy *= -1;
+//     }
+//   }
+// }
 function updatePositions() {
   const canvas = canvasRef.value;
   if (!canvas) return; // 캔버스가 없으면 종료
@@ -427,7 +690,11 @@ function updatePositions() {
 
 
   for (let planet of planets) {
+    // planet.x += planet.vx * initSpeedScale.value * speedScaleWeight.value; // 속도 감소
+    // planet.y += planet.vy * initSpeedScale.value * speedScaleWeight.value;
     initSpeedScale.value = 0;
+    // planet.x += planet.vx * planet.speed * speedScaleWeight.value; // 속도 감소
+    // planet.y += planet.vy * planet.speed * speedScaleWeight.value;
     planet.x += planet.vx * planet.speed * speedScaleWeight.value; // 속도 감소
     planet.y += planet.vy * planet.speed * speedScaleWeight.value;
 
@@ -441,6 +708,26 @@ function updatePositions() {
   }
 }
 
+// 캔버스 그리기
+// function draw() {
+//   const ctx = ctxRef.value;
+//   const canvas = canvasRef.value;
+//   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+//   for (let planet of planets) {
+//     ctx.beginPath();
+//     ctx.arc(planet.x, planet.y, planet.radius, 0, Math.PI * 2);
+//     // ctx.fillStyle = `rgba(${Math.floor(Math.random() * 256)}, 
+//     //                   ${Math.floor(Math.random() * 256)}, 
+//     //                   ${Math.floor(Math.random() * 256)}, 
+//     //                   0.8)`;
+// 		ctx.fillStyle = "rgba(255, 215, 0, 0.8)";
+//     ctx.fill();
+//     ctx.strokeStyle = "gold";
+//     ctx.stroke();
+//   }
+// }
+// let drawingCount = 0
 function draw() {
   // ✅ Canvas와 Context 존재 여부 확인
   if (!canvasRef.value?.getContext) return;
@@ -450,6 +737,8 @@ function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   updateFPS();
 
+  // let i = 0
+  // console.log(planets.length, 'planets.length-999999999999999999')
   for (let planet of planets) {
     // 1. 모든 숫자 속성 검사 (x, y, radius, mass 등)
     const hasInvalidValue = Object.values(planet).some(
@@ -588,8 +877,7 @@ function draw() {
   ctx.fillStyle = "white";
   ctx.font = "16px Arial";
   ctx.textAlign = "left";
-  ctx.fillText(`FPS: ${fps.value} | G: ${G.value}  | Objects: ${planets.length} | Explodes: ${explodeCount.value} | Collisions: ${collisionCount.value} | BiggestMass: ${biggestMass.value} (exploding: ${planets[biggestPlanetIdx.value].exploding}, radius: ${planets[biggestPlanetIdx.value].radius}) | Forces: ${forceSum.value}
-  `, 20, canvas.height - 20);
+  ctx.fillText(`FPS: ${fps.value} | Objects: ${planets.length} | Explodes: ${explodeCount.value} | Collisions: ${collisionCount.value} | biggestMass: ${biggestMass.value} (exploding: ${planets[biggestPlanetIdx.value].exploding}, radius: ${planets[biggestPlanetIdx.value].radius.toFixed(3)})`, 20, canvas.height - 20);
 
   // ctx.fillStyle = "white";
   // ctx.font = "16px Arial";
@@ -605,19 +893,20 @@ watch(bigBang, (newVal) => {
   animate();
 });
 
-function generatePlanetsInVacumm() {
-  const canvas = canvasRef.value;
-  const width = canvas.width = window.innerWidth;
-  const height = canvas.height = window.innerHeight;
-  const x = Math.random() * width;
-  const y = Math.random() * height;
-  const radius = Math.max(Math.random() * 20 * smallObjectMassWeight, objectMinRadius.value);
-  const density = Math.random() * maxDensity;
-  const mass = (4 / 3) * Math.PI * Math.pow(radius, 3) * density * (pxConversion.value ** 2); // 초기 질량,
-  const vx = 0;
-  const vy = 0;
-  createSmallObject(planets.length, x, y, radius, mass, density, vx, vy)
-}
+// watch(planets, (newVal) => {
+//   // 빅뱅 상태 변경 시 실행할 코드
+//   console.log('planets:', newVal);
+//   // 상태 변경 시 애니메이션 재시작
+//   applyGravity();
+// });
+
+// watchEffect(() => {
+//   let max = 0;
+//   for (const planet of planets) {
+//     if (planet.mass > max) max = planet.mass;
+//   }
+//   biggestMass.value = max;
+// });
 
 // 애니메이션 루프
 function animate(timestamp) {
@@ -661,20 +950,21 @@ function animate(timestamp) {
         isGeneratingObject.value = false
       }
       if (isGeneratingObject.value) {
-        generatePlanetsInVacumm()
+        const canvas = canvasRef.value;
+        const width = canvas.width = window.innerWidth;
+        const height = canvas.height = window.innerHeight;
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        const radius = Math.max(Math.random() * 20 * smallObjectMassWeight, objectMinRadius.value);
+        const density = Math.random() * maxDensity;
+        const mass = (4 / 3) * Math.PI * Math.pow(radius, 3) * density; // 초기 질량,
+        const vx = 0;
+        const vy = 0;
+        createSmallObject(planets.length, x, y, radius, mass, density, vx, vy)
       }
     }
   } else {
     G.value = normalG.value
-    if (planets.length <= minObjectNumToStartGenerating.value && !isGeneratingObject.value) {
-      isGeneratingObject.value = true
-    }
-    if (planets.length >= maxObjectNumToStopGenerating.value) {
-      isGeneratingObject.value = false
-    }
-    if (isGeneratingObject.value) {
-      generatePlanetsInVacumm()
-    }
   } 
 
   handleCollisions();

@@ -48,6 +48,23 @@ const routes = [
             name: 'errorReport',
             component: () => import("@/views/services/errorReport/IndexView.vue"),
           },
+          {
+            path: 'jabDongsani',
+            name: 'jabDongsani',
+            component: () => import("@/views/services/jabDongsani/IndexView.vue"),
+            children: [
+              {
+                path: 'main',
+                name: 'jabDongsaniMain',
+                component: () => import("@/views/services/jabDongsani/main/IndexView.vue"),
+              },
+              {
+                path: 'solarSystem',
+                name: 'solarSystem',
+                component: () => import("@/views/services/jabDongsani/solarSystem/IndexView.vue"),
+              },
+            ]
+          },
         ]
       },
       {

@@ -63,6 +63,7 @@ export default {
 				{caption: '수행/지필', route: 'exams'},
 				{caption: '갤러리', route: 'gallery'},
 				{caption: '오류신고문의', route: 'errorReport'},
+				{caption: '잡동사니', route: 'jabDongsaniMain'},
 			]
 		}
 	},

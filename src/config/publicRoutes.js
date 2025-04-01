@@ -11,5 +11,8 @@ export const publicRoutes = [
 	'/service/notifications',
 	'/service/exams',
 	'/service/gallery',
-	'/service/errorReport'
+	'/service/errorReport',
+	'/service/jabDongsani',
+	'/service/jabDongsani/main',
+	'/service/jabDongsani/solarSystem'
 ];
