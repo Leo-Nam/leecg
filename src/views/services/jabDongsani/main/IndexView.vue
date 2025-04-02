@@ -2,6 +2,10 @@
 	<div>
 		<div class="button" @click="$goRoute('gallery')">universe</div>
 		<div class="button" @click="$goRoute('solarSystem')">solarSystem</div>
+		<div class="button" @click="$goRoute('solarSystem_v2')">solarSystem ver.2</div>
+		<div class="button" @click="$goRoute('wheelSpinnerGame')">wheel spinner game</div>
+		<div class="button" @click="$goRoute('aStarTrackingMaze')">A* Tracking Maze</div>
+		<div class="button" @click="$goRoute('fortRess')">fortRess</div>
 	</div>
 </template>
 <script>

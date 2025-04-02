@@ -19,11 +19,16 @@
         <input type="range" v-model="speedFactor" min="1" max="10000000" step="1" />
       </div>
     </div>
+    <FullscreenToggle />
   </div>
 </template>
 
 <script>
+import FullscreenToggle from '@/components/common/FullscreenToggle.vue'
 export default {
+  components: {
+    FullscreenToggle
+  },
   data() {
     return {
       scaleFactor: 1, // 전체 축소 비율 (기본 100배 축소)

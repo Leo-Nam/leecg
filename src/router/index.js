@@ -63,6 +63,26 @@ const routes = [
                 name: 'solarSystem',
                 component: () => import("@/views/services/jabDongsani/solarSystem/IndexView.vue"),
               },
+              {
+                path: 'solarSystem_v2',
+                name: 'solarSystem_v2',
+                component: () => import("@/views/services/jabDongsani/solarSystem_v2/IndexView.vue"),
+              },
+              {
+                path: 'wheelSpinnerGame',
+                name: 'wheelSpinnerGame',
+                component: () => import("@/views/services/jabDongsani/wheelSpinnerGame/IndexView.vue"),
+              },
+              {
+                path: 'aStarTrackingMaze',
+                name: 'aStarTrackingMaze',
+                component: () => import("@/views/services/jabDongsani/aStarTrackingMaze/IndexView.vue"),
+              },
+              {
+                path: 'fortRess',
+                name: 'fortRess',
+                component: () => import("@/views/services/jabDongsani/fortRess/IndexView.vue"),
+              },
             ]
           },
         ]

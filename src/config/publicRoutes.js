@@ -14,5 +14,9 @@ export const publicRoutes = [
 	'/service/errorReport',
 	'/service/jabDongsani',
 	'/service/jabDongsani/main',
-	'/service/jabDongsani/solarSystem'
+	'/service/jabDongsani/solarSystem',
+	'/service/jabDongsani/solarSystem_v2',
+	'/service/jabDongsani/wheelSpinnerGame',
+	'/service/jabDongsani/aStarTrackingMaze',
+	'/service/jabDongsani/fortRess'
 ];

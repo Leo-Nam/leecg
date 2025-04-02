@@ -2,7 +2,6 @@
   <div class="width-100">
     <div class="bg-antiquewhite pb-100 pt-30">
       <div class="width-100 fs-30 df jcc">대학 가자, 얘들아!</div>
-      <div class="width-100 fs-30 df jcc">현빈이도 같이 데려가자!</div>
     </div>
 
     <div 
