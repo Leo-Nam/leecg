@@ -6,6 +6,10 @@
 		<div class="button" @click="$goRoute('wheelSpinnerGame')">wheel spinner game</div>
 		<div class="button" @click="$goRoute('aStarTrackingMaze')">A* Tracking Maze</div>
 		<div class="button" @click="$goRoute('fortRess')">fortRess</div>
+		<div class="button" @click="$goRoute('cloudSimul')">cloud Simuation</div>
+		<div class="button" @click="$goRoute('snakeSimul')">snake Simuation</div>
+		<div class="button" @click="$goRoute('snakeSimul_v2')">snake Simuation ver.2</div>
+		<div class="button" @click="$goRoute('snakeSimul_v3')">snake Simuation ver.3</div>
 	</div>
 </template>
 <script>

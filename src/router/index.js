@@ -83,6 +83,26 @@ const routes = [
                 name: 'fortRess',
                 component: () => import("@/views/services/jabDongsani/fortRess/IndexView.vue"),
               },
+              {
+                path: 'cloudSimul',
+                name: 'cloudSimul',
+                component: () => import("@/views/services/jabDongsani/cloudSimul/IndexView.vue"),
+              },
+              {
+                path: 'snakeSimul',
+                name: 'snakeSimul',
+                component: () => import("@/views/services/jabDongsani/snakeSimul/IndexView.vue"),
+              },
+              {
+                path: 'snakeSimul_v2',
+                name: 'snakeSimul_v2',
+                component: () => import("@/views/services/jabDongsani/snakeSimul_v2/IndexView.vue"),
+              },
+              {
+                path: 'snakeSimul_v3',
+                name: 'snakeSimul_v3',
+                component: () => import("@/views/services/jabDongsani/snakeSimul_v3/IndexView.vue"),
+              },
             ]
           },
         ]

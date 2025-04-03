@@ -10,6 +10,18 @@
       <div v-else-if="getCurrrentRouteName=='solarSystem_v2'">
         <solarSystemComp_v2 />
       </div>
+      <div v-else-if="getCurrrentRouteName=='cloudSimul'">
+        <cloudSimulComp />
+      </div>
+      <div v-else-if="getCurrrentRouteName=='snakeSimul'">
+        <snakeSimulComp />
+      </div>
+      <div v-else-if="getCurrrentRouteName=='snakeSimul_v2'">
+        <snakeSimulV2Comp />
+      </div>
+      <div v-else-if="getCurrrentRouteName=='snakeSimul_v3'">
+        <snakeSimulV3Comp />
+      </div>
       <div v-else class="width-100" style="max-width:1280px">
         <div ref="menu" class="df aic">
           <div class="width-100">
@@ -47,6 +59,10 @@ import eventBus from '@/eventBus';
 import einsteinGravitySimulComp from '@/components/services/gallery/einsteinGravitySimulComp.vue'
 import solarSystemComp from '@/components/services/jabDongsani/solarSystem/solarSystemComp.vue'
 import solarSystemComp_v2 from '@/components/services/jabDongsani/solarSystem_v2/solarSystemComp.vue'
+import cloudSimulComp from '@/components/services/jabDongsani/cloudSimul/cloudSimulComp.vue'
+import snakeSimulComp from '@/components/services/jabDongsani/snakeSimul/snakeSimulComp.vue'
+import snakeSimulV2Comp from '@/components/services/jabDongsani/snakeSimul_v2/snakeSimulComp.vue'
+import snakeSimulV3Comp from '@/components/services/jabDongsani/snakeSimul_v3/snakeSimulComp.vue'
 
 export default {
   name: 'App',
@@ -55,7 +71,11 @@ export default {
     appFooter,
     einsteinGravitySimulComp,
     solarSystemComp,
-    solarSystemComp_v2
+    solarSystemComp_v2,
+    cloudSimulComp,
+    snakeSimulComp,
+    snakeSimulV2Comp,
+    snakeSimulV3Comp
   },
   data() {
     return {
