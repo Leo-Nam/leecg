@@ -17,6 +17,7 @@
           {{ simulationEnded ? '재시작' : '초기화' }}
         </button>
         <div class="counter">길이: {{ points.length }}</div>
+        <div class="counter">실시간순위: {{ realTimeRank }}</div>
       </div>
       <FullscreenToggle />
     </div>
@@ -49,7 +50,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import FullscreenToggle from '@/components/common/FullscreenToggle.vue'
 import { useStore } from 'vuex'
 
@@ -57,7 +58,10 @@ const points = ref([]);
 const simulationEnded = ref(false);
 const svg = ref(null);
 const store = useStore()
-const scores = computed(() => store.state.jabDongsani.scores)
+const realTimeRank = ref(0);
+// 현재 이동 거리 (points.length)
+const currentScore = computed(() => points.value.length || 0);
+const scores = computed(() => store.state.jabDongsani?.scores || []);
 const sortedScores = computed(() => {
   // scores.value가 undefined일 경우 빈 배열 반환
   if (!scores.value) return [];
@@ -70,6 +74,23 @@ const sortedScores = computed(() => {
 });
 
 const top20Scores = computed(() => sortedScores.value.slice(0, 20));
+
+
+
+// 실시간 순위 계산
+watch([sortedScores, currentScore], () => {
+  const score = currentScore.value;
+  
+  // 1. 현재 점수가 정렬된 배열에서 몇 번째인지 찾기
+  const rank = sortedScores.value.findIndex(s => score > s) + 1;
+  
+  // 2. 모든 점수보다 작으면 마지막 순위 + 1
+  realTimeRank.value = rank === 0 
+    ? sortedScores.value.length + 1 
+    : rank;
+}, { immediate: true });
+
+
 // let angleDeg = ref(45)
 // let detectionDistance = ref(100)
 
