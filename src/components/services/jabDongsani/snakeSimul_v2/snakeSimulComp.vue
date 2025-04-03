@@ -30,16 +30,46 @@
         <input type="range" v-model="config.detectionDistance" min="10" max="100" step="1" />
       </div>
     </div>
+    <div class="upright-score-board">
+      <!-- 정렬된 점수 리스트 표시 -->
+      <div 
+        v-for="(score, index) in top20Scores" 
+        :key="index"
+        class="score-item"
+      >
+        {{ index + 1 }}위: {{ score.toLocaleString('ko-KR') }}점
+      </div>
+
+      <!-- 점수가 없을 때 표시 -->
+      <div v-if="sortedScores.length === 0" class="no-scores">
+        표시할 점수가 없습니다.
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import FullscreenToggle from '@/components/common/FullscreenToggle.vue'
+import { useStore } from 'vuex'
 
 const points = ref([]);
 const simulationEnded = ref(false);
 const svg = ref(null);
+const store = useStore()
+const scores = computed(() => store.state.jabDongsani.scores)
+const sortedScores = computed(() => {
+  // scores.value가 undefined일 경우 빈 배열 반환
+  if (!scores.value) return [];
+  
+  // 숫자 타입 확인 및 내림차순 정렬
+  return [...scores.value]
+    .map(score => Number(score))  // 숫자 변환 (문자열 대비)
+    .filter(score => !isNaN(score)) // 유효한 숫자만 필터링
+    .sort((a, b) => b - a);  // 내림차순 정렬
+});
+
+const top20Scores = computed(() => sortedScores.value.slice(0, 20));
 // let angleDeg = ref(45)
 // let detectionDistance = ref(100)
 
@@ -267,12 +297,13 @@ const isColliding = (point, checkDistance = config.value.minStep * 1.5) => {
   
   // 화면 경계 검사
   if (point.x < 0 || point.x > w || point.y < 0 || point.y > h) {
+    console.log('여기여기...')
     return true;
   }
 
   // 꼬리 부분은 충돌 검사에서 제외 (최근 5개 점 무시)
   const checkPoints = points.value.slice(0, -config.value.memoryLength);
-  console.log({checkPoints})
+  // console.log({checkPoints})
   
   return checkPoints.some(p => {
     const dx = p.x - point.x;
@@ -291,8 +322,8 @@ const getNextDirection = () => {
   // 현재 방향에 무작위성 추가
   const optimalAngle = getOptimalDirection()
   const directionAngleRad = optimalAngle
-  const directionAngleDeg = 180 / ( directionAngleRad * Math.PI )
-  console.log(directionAngleRad, directionAngleDeg, 'directionAngleRad, directionAngleDeg')
+  // const directionAngleDeg = 180 / ( directionAngleRad * Math.PI )
+  // console.log(directionAngleRad, directionAngleDeg, 'directionAngleRad, directionAngleDeg')
   return directionAngleRad;
 };
 
@@ -311,7 +342,7 @@ const findOrganicPoint = (attempt = 0) => {
 
   // 충돌 시 약간의 각도 조정으로 재시도
   if (isColliding(newPoint)) {
-    console.log('colliding happened!')
+    // console.log('colliding happened!')
     const adjustAngle = angle + (Math.random() > 0.5 ? 0.2 : -0.2);
     return findOrganicPoint(attempt + 1, adjustAngle);
   }
@@ -332,6 +363,8 @@ const runOrganicSimulation = () => {
     setTimeout(runOrganicSimulation, points.value.length < 100 ? 50 : 10);
   } else {
     simulationEnded.value = true;
+    store.commit('jabDongsani/setScore', points.value.length)
+    console.log(store.state.jabDongsani.scores)
   }
 };
 
@@ -374,6 +407,17 @@ svg {
   position: fixed;
   bottom: 20px;
   left: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
+  z-index: 100;
+  max-width: 300px;
+}
+.upright-score-board {
+  position: fixed;
+  right: 20px;
+  top: 20px;
   background: rgba(0, 0, 0, 0.7);
   padding: 10px;
   border-radius: 5px;
