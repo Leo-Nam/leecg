@@ -108,6 +108,16 @@ const routes = [
                 name: 'guestBook',
                 component: () => import("@/views/services/jabDongsani/guestBook/IndexView.vue"),
               },
+              {
+                path: 'tetris',
+                name: 'tetris',
+                component: () => import("@/views/services/jabDongsani/tetris/IndexView.vue"),
+              },
+              {
+                path: 'billiards',
+                name: 'billiards',
+                component: () => import("@/views/services/jabDongsani/billiards/IndexView.vue"),
+              },
             ]
           },
         ]

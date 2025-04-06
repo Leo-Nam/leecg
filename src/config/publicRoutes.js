@@ -24,4 +24,6 @@ export const publicRoutes = [
 	'/service/jabDongsani/snakeSimul_v2',
 	'/service/jabDongsani/snakeSimul_v3',
 	'/service/jabDongsani/guestBook',
+	'/service/jabDongsani/tetris',
+	'/service/jabDongsani/billiards',
 ];
