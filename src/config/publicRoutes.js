@@ -22,5 +22,6 @@ export const publicRoutes = [
 	'/service/jabDongsani/cloudSimul',
 	'/service/jabDongsani/snakeSimul',
 	'/service/jabDongsani/snakeSimul_v2',
-	'/service/jabDongsani/snakeSimul_v3'
+	'/service/jabDongsani/snakeSimul_v3',
+	'/service/jabDongsani/guestBook',
 ];

@@ -103,6 +103,11 @@ const routes = [
                 name: 'snakeSimul_v3',
                 component: () => import("@/views/services/jabDongsani/snakeSimul_v3/IndexView.vue"),
               },
+              {
+                path: 'guestBook',
+                name: 'guestBook',
+                component: () => import("@/views/services/jabDongsani/guestBook/IndexView.vue"),
+              },
             ]
           },
         ]

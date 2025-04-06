@@ -19,6 +19,24 @@
         <div class="counter">길이: {{ points.length }}</div>
         <div class="counter">실시간순위: {{ realTimeRank }}</div>
         <div class="counter">speed: {{ speed.toFixed(2) }}</div>
+        <div 
+          class="alert front"
+          :style="`
+            background-color: ${alert.front ? '#F44336' : '#4CAF50'};
+          `"
+        >전방</div>
+        <div 
+          class="alert left"
+          :style="`
+            background-color: ${alert.left ? '#F44336' : '#4CAF50'};
+          `"
+        >좌측</div>
+        <div 
+          class="alert right"
+          :style="`
+            background-color: ${alert.right ? '#F44336' : '#4CAF50'};
+          `"
+        >우측</div>
       </div>
       <FullscreenToggle />
     </div>
@@ -38,10 +56,6 @@
       <div>
         <label>전방충돌감지시좌우측탐지거리배수: {{ config.wingCheckDistanceBeforeCollisionAhead }}</label><br>
         <input type="range" v-model="config.wingCheckDistanceBeforeCollisionAhead" min="1" max="5" step="0.1" />
-      </div>
-      <div>
-        <label>속도: {{ config.speed }}</label><br>
-        <input type="range" v-model="config.speed" min="1" max="100" step="1" />
       </div>
     </div>
     <div class="upright-score-board">
@@ -85,11 +99,21 @@ const sortedScores = computed(() => {
     .filter(score => !isNaN(score)) // 유효한 숫자만 필터링
     .sort((a, b) => b - a);  // 내림차순 정렬
 });
-const maxScore = computed(() => Math.max(...sortedScores.value, 0)); // 최대 점수 (0보다 작은 경우 0으로 설정)
+// const maxScore = computed(() => Math.max(...sortedScores.value, 0)); // 최대 점수 (0보다 작은 경우 0으로 설정)
 
 const top20Scores = computed(() => sortedScores.value.slice(0, 20));
 
 const speed = ref(0)
+const duration = ref(0) // 애니메이션 지속 시간 (ms)
+const startTime = ref(0) // 애니메이션 시작 시간 (ms)
+
+const alert = ref([
+  { key: 'front', value: false },
+  { key: 'left', value: false },
+  { key: 'right', value: false }
+])
+
+startTime.value = Date.now() // 현재 시간으로 초기화
 
 
 // let angleDeg = ref(45)
@@ -99,17 +123,17 @@ const speed = ref(0)
 const config = ref({
   minStep: 1,             // 최소 이동 거리
   maxStep: 1,             // 최대 이동 거리
-  maxTurnAngle: Math.PI/3, // 최대 회전 각도(60도) : Math.PI/3
+  maxTurnAngle: Math.PI/6, // 최대 회전 각도(30도) : Math.PI/3
   memoryLength: 5,        // 방향 기억 길이 : 5
   randomness: 0.9,        // 무작위성 정도 (0~1) : 0.7
   maxAttempts: 10,         // 재시도 횟수 : 50
   angleDeg: 45,
-  detectionDistance: 50,
+  detectionDistance: 100,
   frontCollisionCheckDistance: 4, // 전방탐지거리 배수
-  wingCheckDistanceBeforeCollisionAhead: 2.5, // 전방충돌감지시 좌우부채꼴 탐지거리 배수
+  wingCheckDistanceBeforeCollisionAhead: 2.0, // 전방충돌감지시 좌우부채꼴 탐지거리 배수
   crawlInitSpeed: 100, // 초기 속도 (0.5 ~ 1.5)
-  maxSpeed: 1, // 최대 속도 (0.5 ~ 1.5)
-  speed: 10, // 속도 (0.5 ~ 1.5)
+  maxSpeed: 0.01, // 최대 속도 (0.5 ~ 1.5)
+  turningWeight: 0.0, // 회전 가중치 (0.5 ~ 1.5)
 });
 
 
@@ -125,7 +149,15 @@ watch([sortedScores, currentScore], () => {
   realTimeRank.value = rank === 0 
     ? sortedScores.value.length + 1 
     : rank;
-  speed.value = Math.max(config.value.maxSpeed, config.value.crawlInitSpeed * (1 - points.value.length / maxScore.value))
+    
+  const currentTime = Date.now();
+  duration.value = currentTime - startTime.value; // 애니메이션 지속 시간 계산
+  if (duration.value >= 1000) { // 1초 이상 경과한 경우
+    speed.value = points.value.length / (duration.value / 1000); // 초당 점 개수 계산
+  } else {
+    speed.value = 0; // 1초 미만일 경우 속도 0으로 설정
+  }
+  // speed.value = Math.max(config.value.maxSpeed, config.value.crawlInitSpeed * (1 - points.value.length / maxScore.value))
   // console.log('speed.value, config.value.crawlInitSpeed, config.value.maxSpeed, points.value.length, maxScore.value', speed.value, config.value.crawlInitSpeed, config.value.maxSpeed, points.value.length, maxScore.value)
 }, { immediate: true });
 
@@ -208,6 +240,16 @@ const countLeftRightPoints = (points) =>{
   }
   // console.log({leftCount, rightCount})
   // console.log(leftCount > rightCount ? '오른쪽으로 가야해!' : '왼쪽으로 가야해!')
+  if (leftCount < rightCount) {
+    alert.value.left = true; // 왼쪽 장애물 경고
+    alert.value.right = false; // 오른쪽 장애물 경고 해제
+  } else if (leftCount > rightCount) {
+    alert.value.right = true; // 오른쪽 장애물 경고
+    alert.value.left = false; // 왼쪽 장애물 경고 해제
+  } else {
+    alert.value.left = false; // 양쪽 장애물 경고 해제
+    alert.value.right = false; // 양쪽 장애물 경고 해제
+  }
   return leftCount / (leftCount + rightCount);
 }
 
@@ -265,7 +307,9 @@ const getOptimalDirection = () => {
       });
 
       if (hasObstacle) {
-        console.log('경고!!, 경고!!, 전방', minDist, '에 장애물 발견! 회피하라!!!!');
+        alert.value.front = true; // 장애물 발견 시 경고 표시
+      } else {
+        alert.value.front = false; // 장애물 없을 때 경고 해제
       }
       return hasObstacle;
     })();
@@ -275,7 +319,12 @@ const getOptimalDirection = () => {
       last.x, last.y, currentAngle, config.value.detectionDistance
     );
     if (hasScreenObstacle) {
+      alert.value.front = true; // 화면 경계 발견 시 경고 표시
       console.log('경고!!, 경고!!, 전방', config.value.detectionDistance, '안에 화면 경계 발견! 회피하라!!!!')
+    } else {
+      if (!hasPointObstacle) {
+        alert.value.front = false; // 장애물 없을 때 경고 해제
+      }
     }
     // console.log(hasScreenObstacle ? '화면 경계 충돌!' : '전방 장애물 없음!')
     return hasPointObstacle || hasScreenObstacle;
@@ -355,9 +404,12 @@ const getOptimalDirection = () => {
 
   // 9. 일반적인 경우
   const targetSector = leftCount < rightCount ? leftSector : (rightCount < leftCount ? rightSector : (Math.random() > 0.5 ? leftSector : rightSector));
+  // const targetSector = leftCount > rightCount ? leftSector : (rightCount > leftCount ? rightSector : (Math.random() > 0.5 ? leftSector : rightSector));
   // console.log({turnWeight})
   // return turnWeight > 0 ? targetSector.start + Math.random() * (angleRad - 0.1) : targetSector.end + Math.random() * (angleRad - 0.1);
-  return targetSector.start + Math.random() * (angleRad - 0.1);
+  // return targetSector.start + Math.random() * (angleRad - 0.1);
+  return targetSector.start + (Math.random() * (1 - config.value.turningWeight) + config.value.turningWeight) * (angleRad - 0.1);
+
 }
 
 // 선분 교차점 계산 함수
@@ -473,10 +525,8 @@ const updateSimulationSpeed = () => {
   // console.log('Updated speed:', speed.value); // 변경된 값 확인
   clearTimeout(simulationTimer); // 기존 타이머 제거
   // simulationTimer = setTimeout(runOrganicSimulation, speed.value); // 새 타이머 설정
-  simulationTimer = setTimeout(runOrganicSimulation, config.value.maxSpeed * (config.value.speed / 100)); // 새 타이머 설정
+  simulationTimer = setTimeout(runOrganicSimulation, config.value.maxSpeed); // 새 타이머 설정
 }
-
-watch(speed, updateSimulationSpeed); // Vue의 watch 예시
 
 // 생명체 같은 움직임 구현
 const runOrganicSimulation = () => {
@@ -499,6 +549,10 @@ const runOrganicSimulation = () => {
     simulationEnded.value = true;
     store.commit('jabDongsani/setScore', points.value.length)
     // console.log(store.state.jabDongsani.scores)
+    duration.value = 0; // 애니메이션 지속 시간 초기화
+    speed.value = 0; // 속도 초기화
+    startTime.value = null // 애니메이션 시작 시간 초기화
+    // console.log('Simulation ended!');
   }
 };
 
@@ -515,6 +569,17 @@ onMounted(() => {
 </script>
 
 <style>
+/* 기본 스타일 (모두 녹색) */
+.alert {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #4CAF50; /* 기본 녹색 */
+  color: white;
+  font-weight: bold;
+  border-radius: 4px;
+  margin: 5px;
+  transition: background-color 0.3s ease;
+}
 /* 이전과 동일한 스타일 유지 */
 .container {
   width: 100vw;

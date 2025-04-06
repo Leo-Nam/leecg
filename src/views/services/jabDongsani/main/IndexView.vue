@@ -10,6 +10,7 @@
 		<div class="button" @click="$goRoute('snakeSimul')">snake Simuation</div>
 		<div class="button" @click="$goRoute('snakeSimul_v2')">snake Simuation ver.2</div>
 		<div class="button" @click="$goRoute('snakeSimul_v3')">snake Simuation ver.3</div>
+		<div class="button" @click="$goRoute('guestBook')">guestBook</div>
 	</div>
 </template>
 <script>
