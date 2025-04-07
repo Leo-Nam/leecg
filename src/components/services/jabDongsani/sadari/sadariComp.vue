@@ -389,9 +389,11 @@ export default {
     resetGame() {
       // 완전히 새로운 사다리 생성
       this.generateBridges();
-      this.results = Array(this.getParticipants).fill().map(() => 
-        `${Math.floor((Math.random() * 9000 + 1000) / 1000) * 1000}원`
-      );
+      // this.results = Array(this.getParticipants).fill().map(() => 
+      //   `${Math.floor((Math.random() * 9000 + 1000) / 1000) * 1000}원`
+      // );
+      this.results = Array.from({ length: this.getParticipants }, () => 
+      `${Math.floor((Math.random() * 9000 + 1000) / 1000) * 1000}원`);
       this.restartGame();
     },
 
