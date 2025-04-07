@@ -118,6 +118,11 @@ const routes = [
                 name: 'billiards',
                 component: () => import("@/views/services/jabDongsani/billiards/IndexView.vue"),
               },
+              {
+                path: 'sadari',
+                name: 'sadari',
+                component: () => import("@/views/services/jabDongsani/sadari/IndexView.vue"),
+              },
             ]
           },
         ]

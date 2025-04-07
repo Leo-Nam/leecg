@@ -13,6 +13,7 @@
 		<div class="button" @click="$goRoute('guestBook')">guestBook</div>
 		<div class="button" @click="$goRoute('tetris')">tetris</div>
 		<div class="button" @click="$goRoute('billiards')">billiards</div>
+		<div class="button" @click="$goRoute('sadari')">sadari</div>
 	</div>
 </template>
 <script>

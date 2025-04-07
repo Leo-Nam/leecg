@@ -26,4 +26,5 @@ export const publicRoutes = [
 	'/service/jabDongsani/guestBook',
 	'/service/jabDongsani/tetris',
 	'/service/jabDongsani/billiards',
+	'/service/jabDongsani/sadari',
 ];
