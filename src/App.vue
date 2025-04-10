@@ -22,6 +22,9 @@
       <div v-else-if="getCurrrentRouteName=='snakeSimul_v3'">
         <snakeSimulV3Comp />
       </div>
+      <div v-else-if="getCurrrentRouteName=='gameOfLife'">
+        <gameOfLifeComp />
+      </div>
       <div v-else class="width-100" style="max-width:1280px">
         <div ref="menu" class="df aic">
           <div class="width-100">
@@ -63,6 +66,7 @@ import cloudSimulComp from '@/components/services/jabDongsani/cloudSimul/cloudSi
 import snakeSimulComp from '@/components/services/jabDongsani/snakeSimul/snakeSimulComp.vue'
 import snakeSimulV2Comp from '@/components/services/jabDongsani/snakeSimul_v2/snakeSimulComp.vue'
 import snakeSimulV3Comp from '@/components/services/jabDongsani/snakeSimul_v3/snakeSimulComp.vue'
+import gameOfLifeComp from '@/components/services/jabDongsani/gameOfLife/gameOfLifeComp.vue'
 
 export default {
   name: 'App',
@@ -75,7 +79,8 @@ export default {
     cloudSimulComp,
     snakeSimulComp,
     snakeSimulV2Comp,
-    snakeSimulV3Comp
+    snakeSimulV3Comp,
+    gameOfLifeComp
   },
   data() {
     return {

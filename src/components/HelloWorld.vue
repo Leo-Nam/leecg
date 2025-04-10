@@ -37,6 +37,11 @@ export default {
     msg: String
   }
 }
+setup(props) {
+  return {
+    msg: 'Hello Vue 3 + TypeScript + Composition API'
+  }
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

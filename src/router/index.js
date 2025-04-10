@@ -123,6 +123,16 @@ const routes = [
                 name: 'sadari',
                 component: () => import("@/views/services/jabDongsani/sadari/IndexView.vue"),
               },
+              {
+                path: 'piSimulation',
+                name: 'piSimulation',
+                component: () => import("@/views/services/jabDongsani/piSimulation/IndexView.vue"),
+              },
+              {
+                path: 'gameOfLife',
+                name: 'gameOfLife',
+                component: () => import("@/views/services/jabDongsani/gameOfLife/IndexView.vue"),
+              },
             ]
           },
         ]

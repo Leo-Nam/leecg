@@ -27,4 +27,6 @@ export const publicRoutes = [
 	'/service/jabDongsani/tetris',
 	'/service/jabDongsani/billiards',
 	'/service/jabDongsani/sadari',
+	'/service/jabDongsani/piSimulation',
+	'/service/jabDongsani/gameOfLife',
 ];

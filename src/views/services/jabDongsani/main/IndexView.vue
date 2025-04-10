@@ -14,6 +14,8 @@
 		<div class="button" @click="$goRoute('tetris')">tetris</div>
 		<div class="button" @click="$goRoute('billiards')">billiards</div>
 		<div class="button" @click="$goRoute('sadari')">sadari</div>
+		<div class="button" @click="$goRoute('piSimulation')">pi Simulation</div>
+		<div class="button" @click="$goRoute('gameOfLife')">gameOfLife</div>
 	</div>
 </template>
 <script>
